@@ -1,206 +1,156 @@
-const CARD_DATABASE = {
+const CHARACTERS = {
 
-    /* ========================= */
-    /* ウーサン */
-    /* ========================= */
+  woosan: {
 
-    woosan_scout: {
-        id: "woosan_scout",
-        name: "ウーサン斥候",
-        cost: 1,
-        attack: 2,
-        hp: 1,
-        tribe: "woosan",
-        row: "front",
-        type: "unit",
-        rarity: "common",
-        abilities: []
-    },
+    name: "ウーサン",
 
-    woosan_rabbit: {
-        id: "woosan_rabbit",
-        name: "ウーサン突撃兵",
-        cost: 2,
-        attack: 3,
-        hp: 2,
-        tribe: "woosan",
-        row: "front",
-        type: "unit",
-        rarity: "common",
-        abilities: ["rush"]
-    },
+    hp: 70,
 
-    woosan_drummer: {
-        id: "woosan_drummer",
-        name: "ウーサン鼓舞兵",
-        cost: 3,
-        attack: 2,
-        hp: 4,
-        tribe: "woosan",
-        row: "back",
-        type: "unit",
-        rarity: "rare",
-        abilities: ["buff"]
-    },
+    atk: 8,
 
-    /* ========================= */
-    /* ゴリリン */
-    /* ========================= */
+    def: 2,
 
-    gorillin_guard: {
-        id: "gorillin_guard",
-        name: "ゴリリン重戦士",
-        cost: 3,
-        attack: 3,
-        hp: 5,
-        tribe: "gorillin",
-        row: "front",
-        type: "unit",
-        rarity: "common",
-        abilities: ["guard"]
-    },
+    ctr: 15,
 
-    gorillin_crusher: {
-        id: "gorillin_crusher",
-        name: "ゴリリン粉砕兵",
-        cost: 5,
-        attack: 6,
-        hp: 5,
-        tribe: "gorillin",
-        row: "front",
-        type: "unit",
-        rarity: "rare",
-        abilities: []
-    },
+    weights: {
 
-    gorillin_elder: {
-        id: "gorillin_elder",
-        name: "古代ゴリリン",
-        cost: 7,
-        attack: 8,
-        hp: 8,
-        tribe: "gorillin",
-        row: "front",
-        type: "unit",
-        rarity: "legend",
-        abilities: ["boss"]
-    },
+      battle: 20,
 
-    /* ========================= */
-    /* フックロウ */
-    /* ========================= */
+      treasure: 20,
 
-    fukkurou_mage: {
-        id: "fukkurou_mage",
-        name: "フックロウ魔導士",
-        cost: 2,
-        attack: 2,
-        hp: 2,
-        tribe: "fukkurou",
-        row: "back",
-        type: "unit",
-        rarity: "common",
-        abilities: ["spellboost"]
-    },
+      vortex: 20,
 
-    fukkurou_oracle: {
-        id: "fukkurou_oracle",
-        name: "時読みフックロウ",
-        cost: 4,
-        attack: 3,
-        hp: 4,
-        tribe: "fukkurou",
-        row: "back",
-        type: "unit",
-        rarity: "rare",
-        abilities: ["draw"]
-    },
+      rest: 15,
 
-    time_bolt: {
-        id: "time_bolt",
-        name: "タイムボルト",
-        cost: 3,
-        attack: 0,
-        hp: 0,
-        tribe: "spell",
-        row: "none",
-        type: "spell",
-        rarity: "common",
-        abilities: ["damage"]
+      acceleration: 40
+
     }
+
+  },
+
+  gorillin: {
+
+    name: "ゴリリン",
+
+    hp: 120,
+
+    atk: 14,
+
+    def: 5,
+
+    ctr: 10,
+
+    weights: {
+
+      battle: 40,
+
+      treasure: 15,
+
+      vortex: 10,
+
+      rest: 15,
+
+      acceleration: 20
+
+    }
+
+  },
+
+  fukkurou: {
+
+    name: "フックロウ",
+
+    hp: 65,
+
+    atk: 7,
+
+    def: 2,
+
+    ctr: 20,
+
+    weights: {
+
+      battle: 15,
+
+      treasure: 15,
+
+      vortex: 50,
+
+      rest: 10,
+
+      acceleration: 10
+
+    }
+
+  },
+
+  mongrin: {
+
+    name: "モングリン・モングラン",
+
+    hp: 90,
+
+    atk: 10,
+
+    def: 3,
+
+    ctr: 12,
+
+    weights: {
+
+      battle: 20,
+
+      treasure: 50,
+
+      vortex: 10,
+
+      rest: 10,
+
+      acceleration: 10
+
+    }
+
+  }
 
 };
 
-/* ========================= */
-/* 初期デッキ */
-/* ========================= */
+const TREASURES = [
 
-const DECKS = {
+  {name:"古代コイン", value:100},
+  {name:"小型歯車", value:100},
+  {name:"壊れた懐中時計", value:100},
+  {name:"古い巻物", value:100},
+  {name:"銀の欠片", value:100},
 
-    woosan: {
-        id: "woosan",
+  {name:"時空宝石", value:500},
+  {name:"未来金貨", value:500},
+  {name:"浮遊結晶", value:500},
+  {name:"幻影リング", value:500},
+  {name:"蒼晶石", value:500},
 
-        name: "ウーサン",
+  {name:"王家の砂時計", value:1000},
+  {name:"時渡りの剣", value:1000},
+  {name:"星屑コア", value:1000},
+  {name:"黄金歯車", value:1000},
+  {name:"天空宝珠", value:1000},
 
-        description:
-            "高速展開で一気に押し切るアグロデッキ。"
-            + "低コストユニットで盤面を制圧する。",
+  {name:"時空王の懐中時計", value:2500},
+  {name:"永遠結晶", value:2500},
+  {name:"クロノクラウン", value:2500}
 
-        cards: [
-            "woosan_scout",
-            "woosan_scout",
-            "woosan_scout",
+];
 
-            "woosan_rabbit",
-            "woosan_rabbit",
-            "woosan_rabbit",
+const BOSSES = [
 
-            "woosan_drummer",
-            "woosan_drummer"
-        ]
-    },
+  "クロノウルフ",
+  "ギガントベア",
+  "サンドヴァイパー",
+  "ライトニングフォックス",
+  "クロックタイガー",
+  "アイアンタスク",
+  "ミストディア",
+  "アビスキャット",
+  "スカイホーク",
+  "カオスリザード"
 
-    gorillin: {
-        id: "gorillin",
-
-        name: "ゴリリン",
-
-        description:
-            "高耐久ユニットで盤面を支配する。"
-            + "後半になるほど真価を発揮。",
-
-        cards: [
-            "gorillin_guard",
-            "gorillin_guard",
-            "gorillin_guard",
-
-            "gorillin_crusher",
-            "gorillin_crusher",
-
-            "gorillin_elder"
-        ]
-    },
-
-    fukkurou: {
-        id: "fukkurou",
-
-        name: "フックロウ",
-
-        description:
-            "魔法と後衛支援を中心に戦う"
-            + "テクニカルデッキ。",
-
-        cards: [
-            "fukkurou_mage",
-            "fukkurou_mage",
-            "fukkurou_mage",
-
-            "fukkurou_oracle",
-            "fukkurou_oracle",
-
-            "time_bolt",
-            "time_bolt"
-        ]
-    }
-
-};
+];
