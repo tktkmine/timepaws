@@ -22,6 +22,10 @@ body {
 
 }
 
+/* ========================= */
+/* 画面 */
+/* ========================= */
+
 .screen {
 
   display: none;
@@ -48,6 +52,16 @@ body {
 
 }
 
+.scroll-screen {
+
+  overflow-y: auto;
+
+}
+
+/* ========================= */
+/* ロゴ */
+/* ========================= */
+
 .logo {
 
   width: 260px;
@@ -57,6 +71,10 @@ body {
   margin-bottom: 20px;
 
 }
+
+/* ========================= */
+/* ボタン */
+/* ========================= */
 
 button {
 
@@ -89,6 +107,10 @@ button:disabled {
   background: gray;
 
 }
+
+/* ========================= */
+/* キャラ選択 */
+/* ========================= */
 
 .character-list {
 
@@ -128,7 +150,13 @@ button:disabled {
 
   margin-top: 10px;
 
+  margin-bottom: 20px;
+
 }
+
+/* ========================= */
+/* ゲーム画面 */
+/* ========================= */
 
 .top-bar {
 
@@ -202,7 +230,11 @@ button:disabled {
 
   max-width: 420px;
 
-  height: 220px;
+  flex: 1;
+
+  min-height: 180px;
+
+  max-height: 260px;
 
   background: #1b263b;
 
@@ -232,11 +264,20 @@ button:disabled {
 
 }
 
-.help-box {
+/* ========================= */
+/* ヘルプ */
+/* ========================= */
+
+.help-box,
+.book-content {
 
   width: 90%;
 
   max-width: 420px;
+
+  height: 60vh;
+
+  overflow-y: auto;
 
   background: #1b263b;
 
@@ -244,31 +285,13 @@ button:disabled {
 
   border-radius: 12px;
 
-  overflow-y: auto;
-
   text-align: left;
 
 }
 
-#encyclopedia-content {
-
-  width: 90%;
-
-  max-width: 420px;
-
-  height: 70vh;
-
-  overflow-y: auto;
-
-  background: #1b263b;
-
-  border-radius: 12px;
-
-  padding: 16px;
-
-  text-align: left;
-
-}
+/* ========================= */
+/* 図鑑 */
+/* ========================= */
 
 .enemy-box,
 .treasure-box {
@@ -281,6 +304,10 @@ button:disabled {
 
 }
 
+/* ========================= */
+/* リザルト */
+/* ========================= */
+
 #result-button {
 
   background: #ffb703;
@@ -288,5 +315,31 @@ button:disabled {
   color: black;
 
   margin-top: 20px;
+
+}
+
+/* ========================= */
+/* スマホ最適化 */
+/* ========================= */
+
+@media screen and (max-height: 700px) {
+
+  .event-text {
+
+    min-height: 140px;
+
+    max-height: 200px;
+
+    font-size: 16px;
+
+  }
+
+  button {
+
+    padding: 12px;
+
+    font-size: 16px;
+
+  }
 
 }
