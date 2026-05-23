@@ -1,0 +1,403 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0d1020,
+            #1b1f3a
+        );
+
+    color: white;
+
+    font-family:
+        Arial,
+        sans-serif;
+}
+
+/* ========================= */
+/* 共通 */
+/* ========================= */
+
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* ========================= */
+/* メインメニュー */
+/* ========================= */
+
+#main-menu {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.title-area {
+    text-align: center;
+}
+
+.title-area h1 {
+    font-size: 64px;
+    letter-spacing: 6px;
+
+    color: #8fd3ff;
+
+    text-shadow:
+        0 0 10px #4fc3ff,
+        0 0 20px #4fc3ff;
+}
+
+.version {
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.menu-buttons button {
+    width: 300px;
+    padding: 18px;
+
+    font-size: 24px;
+
+    border: none;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #7c3aed
+        );
+
+    color: white;
+
+    cursor: pointer;
+}
+
+.menu-buttons button:disabled {
+    opacity: 0.5;
+}
+
+/* ========================= */
+/* デッキ選択 */
+/* ========================= */
+
+#deck-select {
+    flex-direction: column;
+    padding: 20px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.top-bar button {
+    padding: 10px 20px;
+}
+
+.deck-select-layout {
+    flex: 1;
+
+    display: flex;
+    gap: 20px;
+}
+
+.deck-list {
+    width: 30%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.deck-button {
+    padding: 20px;
+
+    border:
+        2px solid #5a6cff;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.deck-button:hover {
+    transform: scale(1.03);
+}
+
+.deck-button.selected {
+    border-color: #ffe066;
+
+    background:
+        rgba(255,224,102,0.2);
+}
+
+.deck-detail {
+    flex: 1;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    overflow-y: auto;
+}
+
+#deck-name {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+#deck-description {
+    margin-bottom: 20px;
+}
+
+#deck-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-bottom: 20px;
+}
+
+.card-preview {
+    width: 120px;
+
+    padding: 10px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,0.1);
+
+    border:
+        1px solid rgba(255,255,255,0.2);
+}
+
+#confirm-deck-button {
+    padding: 16px 32px;
+
+    font-size: 20px;
+
+    border: none;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #22c55e,
+            #15803d
+        );
+
+    color: white;
+}
+
+/* ========================= */
+/* バトル画面 */
+/* ========================= */
+
+#battle-screen {
+    flex-direction: column;
+
+    padding: 10px;
+
+    gap: 10px;
+}
+
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    border-radius: 10px;
+}
+
+.turn-info {
+    text-align: center;
+}
+
+.hand {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.enemy-hand-area {
+    height: 80px;
+}
+
+.player-hand-area {
+    height: 140px;
+}
+
+.field-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.field-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.field-slot {
+    width: 130px;
+    height: 90px;
+
+    border:
+        2px dashed rgba(255,255,255,0.3);
+
+    border-radius: 12px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#anomaly-display {
+    text-align: center;
+
+    padding: 8px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(124,58,237,0.3);
+
+    color: #d8b4fe;
+}
+
+.battle-controls {
+    display: flex;
+    justify-content: center;
+}
+
+#end-turn-button {
+    padding: 16px 32px;
+
+    font-size: 22px;
+
+    border: none;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f59e0b,
+            #d97706
+        );
+
+    color: white;
+}
+
+/* ========================= */
+/* カード */
+/* ========================= */
+
+.card {
+    width: 110px;
+    height: 130px;
+
+    padding: 8px;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #dbeafe
+        );
+
+    color: black;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    cursor: pointer;
+}
+
+.card-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.card-cost {
+    font-size: 14px;
+    color: #2563eb;
+}
+
+.card-stats {
+    display: flex;
+    justify-content: space-between;
+
+    font-weight: bold;
+}
+
+/* ========================= */
+/* スマホ横持ち */
+/* ========================= */
+
+@media screen and (orientation: portrait) {
+
+    body::before {
+        content:
+            "横向きでプレイしてください";
+
+        position: fixed;
+
+        inset: 0;
+
+        background: black;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 32px;
+
+        z-index: 9999;
+    }
+
+}
