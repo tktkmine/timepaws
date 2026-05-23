@@ -19,7 +19,7 @@
 <body>
 
 <!-- ========================= -->
-<!-- タイトル -->
+<!-- メニュー -->
 <!-- ========================= -->
 
 <div id="menu-screen"
@@ -27,10 +27,6 @@
 
   <img src="img/logo.png"
        class="logo">
-
-  <p>
-    5分時空ローグライク
-  </p>
 
   <button id="start-button">
     ゲーム開始
@@ -40,8 +36,12 @@
     ヘルプ
   </button>
 
-  <button id="encyclopedia-button">
-    図鑑
+  <button id="enemy-book-button">
+    敵図鑑
+  </button>
+
+  <button id="treasure-book-button">
+    お宝図鑑
   </button>
 
 </div>
@@ -51,7 +51,7 @@
 <!-- ========================= -->
 
 <div id="character-screen"
-     class="screen">
+     class="screen scroll-screen">
 
   <h2>主人公選択</h2>
 
@@ -191,46 +191,82 @@
 <!-- ========================= -->
 
 <div id="help-screen"
-     class="screen">
+     class="screen scroll-screen">
 
   <h2>ヘルプ</h2>
 
   <div class="help-box">
 
+    <h3>ゲーム説明</h3>
+
     <p>
-      5分以内にどこまで
-      階層を進めるか競う
-      ローグライクゲーム。
+      180秒の時間で
+      ハイスコアを目指せ。
+    </p>
+
+    <p>
+      制限時間がなくなるか、
+      HPがなくなると
+      ゲーム終了。
     </p>
 
     <hr>
 
     <p>
+      【スコア計算式】
+    </p>
+
+    <p>
+      到達階層×1000
+    </p>
+
+    <p>
+      敵撃破数×500
+    </p>
+
+    <p>
+      ボス撃破数×2000
+    </p>
+
+    <p>
+      お宝スコア=
+      宝の価値
+    </p>
+
+    <hr>
+
+    <h3>イベント説明</h3>
+
+    <p>
       【戦闘】
-      自動戦闘。
+      敵と戦う。
+      自動戦闘となり、
+      主人公→敵→主人公→敵...
+      の順で攻撃。
     </p>
 
     <p>
       【お宝探し】
-      宝を獲得。
-      稀に罠。
+      お宝を獲得。
+      罠や敵が待つ場合もある。
     </p>
 
     <p>
       【時空の渦】
-      時間変動。
+      制限時間が変動。
+      ※最大±60秒
     </p>
 
     <p>
       【休息】
-      時間を消費し
       HP全回復。
+      ※時間30秒消費
     </p>
 
     <p>
       【時の加速】
-      時間を消費し
       3階層進む。
+      ※時間30秒消費
     </p>
 
   </div>
@@ -242,16 +278,35 @@
 </div>
 
 <!-- ========================= -->
-<!-- 図鑑 -->
+<!-- 敵図鑑 -->
 <!-- ========================= -->
 
-<div id="encyclopedia-screen"
+<div id="enemy-book-screen"
      class="screen">
 
-  <h2>図鑑</h2>
+  <h2>敵図鑑</h2>
 
-  <div id="encyclopedia-content">
+  <div id="enemy-book-content"
+       class="book-content">
+  </div>
 
+  <button class="back-button">
+    戻る
+  </button>
+
+</div>
+
+<!-- ========================= -->
+<!-- お宝図鑑 -->
+<!-- ========================= -->
+
+<div id="treasure-book-screen"
+     class="screen">
+
+  <h2>お宝図鑑</h2>
+
+  <div id="treasure-book-content"
+       class="book-content">
   </div>
 
   <button class="back-button">
