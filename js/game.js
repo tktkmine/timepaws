@@ -2,6 +2,8 @@ const state = {
 
   selectedCharacter: null,
 
+  player: null,
+
   time: 300,
 
   floor: 1,
@@ -14,9 +16,13 @@ const state = {
 
   timer: null,
 
-  player: null
+  gameEnded: false
 
 };
+
+/* ========================= */
+/* 画面 */
+/* ========================= */
 
 const screens = {
 
@@ -38,6 +44,16 @@ const screens = {
   result:
     document.getElementById(
       "result-screen"
+    ),
+
+  help:
+    document.getElementById(
+      "help-screen"
+    ),
+
+  encyclopedia:
+    document.getElementById(
+      "encyclopedia-screen"
     )
 
 };
@@ -59,6 +75,10 @@ function switchScreen(screen) {
 
 }
 
+/* ========================= */
+/* メニュー */
+/* ========================= */
+
 document
   .getElementById(
     "start-button"
@@ -73,6 +93,57 @@ document
 
     }
   );
+
+document
+  .getElementById(
+    "help-button"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      switchScreen(
+        screens.help
+      );
+
+    }
+  );
+
+document
+  .getElementById(
+    "encyclopedia-button"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      openEncyclopedia();
+
+    }
+  );
+
+document
+  .querySelectorAll(
+    ".back-button"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        switchScreen(
+          screens.menu
+        );
+
+      }
+    );
+
+  });
+
+/* ========================= */
+/* キャラクター選択 */
+/* ========================= */
 
 document
   .querySelectorAll(
@@ -95,17 +166,40 @@ document
 
         document
           .getElementById(
+            "character-image"
+          )
+          .src = c.image;
+
+        document
+          .getElementById(
             "character-info"
           )
           .innerHTML = `
-            <h3>${c.name}</h3>
+
+            <h3>
+              ${c.name}
+            </h3>
 
             <p>
-              HP:${c.hp}
-              ATK:${c.atk}
-              DEF:${c.def}
-              CTR:${c.ctr}%
+              HP:
+              ${c.hp}
             </p>
+
+            <p>
+              ATK:
+              ${c.atk}
+            </p>
+
+            <p>
+              DEF:
+              ${c.def}
+            </p>
+
+            <p>
+              CTR:
+              ${c.ctr}%
+            </p>
+
           `;
 
         document
@@ -141,6 +235,10 @@ document
     }
   );
 
+/* ========================= */
+/* ゲーム開始 */
+/* ========================= */
+
 function startGame() {
 
   const base =
@@ -172,19 +270,25 @@ function startTimer() {
   state.timer =
     setInterval(() => {
 
+      if(state.gameEnded){
+        return;
+      }
+
       state.time--;
 
       updateUI();
 
-      if (
+      if(
         state.time <= 0
       ) {
 
-        endGame();
+        gameOver(
+          "時間切れ..."
+        );
 
       }
 
-    }, 1000);
+    },1000);
 
 }
 
@@ -236,10 +340,34 @@ function updateUI() {
     .textContent =
       state.player.ctr;
 
+  updateHpBar();
+
+}
+
+function updateHpBar() {
+
+  const maxHp =
+    CHARACTERS[
+      state.selectedCharacter
+    ].hp;
+
+  const ratio =
+    Math.max(
+      0,
+      state.player.hp / maxHp
+    );
+
+  document
+    .getElementById(
+      "hp-fill"
+    )
+    .style.width =
+      `${ratio * 100}%`;
+
 }
 
 /* ========================= */
-/* イベント抽選 */
+/* イベント生成 */
 /* ========================= */
 
 function weightedEvent() {
@@ -252,11 +380,11 @@ function weightedEvent() {
   Object.entries(weights)
     .forEach(([key, value]) => {
 
-      for (
+      for(
         let i = 0;
         i < value;
         i++
-      ) {
+      ){
 
         pool.push(key);
 
@@ -275,11 +403,18 @@ function weightedEvent() {
 
 function generateChoices() {
 
-  const e1 =
+  let e1 =
     weightedEvent();
 
-  const e2 =
+  let e2 =
     weightedEvent();
+
+  while(e1 === e2){
+
+    e2 =
+      weightedEvent();
+
+  }
 
   setupChoice(
     "choice-1",
@@ -295,26 +430,61 @@ function generateChoices() {
 
 function setupChoice(
   id,
-  eventType
-) {
+  type
+){
 
   const button =
     document.getElementById(id);
 
   button.textContent =
-    getEventName(eventType);
+    getEventName(type);
 
-  button.onclick = () => {
+  button.onclick =
+    async () => {
 
-    executeEvent(eventType);
+      disableChoices();
 
-  };
+      await executeEvent(type);
+
+    };
 
 }
 
-function getEventName(type) {
+function disableChoices(){
 
-  switch(type) {
+  document
+    .getElementById(
+      "choice-1"
+    )
+    .disabled = true;
+
+  document
+    .getElementById(
+      "choice-2"
+    )
+    .disabled = true;
+
+}
+
+function enableChoices(){
+
+  document
+    .getElementById(
+      "choice-1"
+    )
+    .disabled = false;
+
+  document
+    .getElementById(
+      "choice-2"
+    )
+    .disabled = false;
+
+}
+
+function getEventName(type){
+
+  switch(type){
 
     case "battle":
       return "戦闘";
@@ -331,494 +501,6 @@ function getEventName(type) {
     case "acceleration":
       return "時の加速";
 
-    default:
-      return "イベント";
-
   }
-
-}
-
-function executeEvent(type) {
-
-  if (
-    state.floor % 10 === 0
-  ) {
-
-    bossBattle();
-
-    return;
-
-  }
-
-  switch(type) {
-
-    case "battle":
-      battleEvent();
-      break;
-
-    case "treasure":
-      treasureEvent();
-      break;
-
-    case "vortex":
-      vortexEvent();
-      break;
-
-    case "rest":
-      restEvent();
-      break;
-
-    case "acceleration":
-      accelerationEvent();
-      break;
-
-  }
-
-  nextFloor();
-
-}
-
-function nextFloor() {
-
-  state.floor++;
-
-  updateUI();
-
-  generateChoices();
-
-}
-
-/* ========================= */
-/* 通常戦闘 */
-/* ========================= */
-
-function battleEvent() {
-
-  const enemy = {
-
-    hp:
-      20
-      + state.floor * 3,
-
-    atk:
-      4
-      + Math.floor(
-          state.floor / 2
-        ),
-
-    def:
-      1
-      + Math.floor(
-          state.floor / 5
-        )
-
-  };
-
-  autoBattle(
-    enemy,
-    false
-  );
-
-}
-
-/* ========================= */
-/* ボス戦 */
-/* ========================= */
-
-function bossBattle() {
-
-  const enemy = {
-
-    name:
-      BOSSES[
-        Math.floor(
-          Math.random()
-          * BOSSES.length
-        )
-      ],
-
-    hp:
-      100
-      + state.floor * 5,
-
-    atk:
-      12
-      + Math.floor(
-          state.floor / 2
-        ),
-
-    def:
-      5
-      + Math.floor(
-          state.floor / 5
-        )
-
-  };
-
-  autoBattle(
-    enemy,
-    true
-  );
-
-  nextFloor();
-
-}
-
-function autoBattle(
-  enemy,
-  boss
-) {
-
-  let log =
-    boss
-      ? `ボス ${enemy.name} が現れた！<br>`
-      : "敵が現れた！<br>";
-
-  while (
-    enemy.hp > 0
-    &&
-    state.player.hp > 0
-  ) {
-
-    let playerDamage =
-      Math.max(
-        1,
-        state.player.atk
-        - enemy.def
-      );
-
-    if (
-      Math.random() * 100
-      <
-      state.player.ctr
-    ) {
-
-      playerDamage *= 2;
-
-      log +=
-        "クリティカル！<br>";
-
-    }
-
-    enemy.hp -=
-      playerDamage;
-
-    log += `
-      主人公が
-      ${playerDamage}
-      ダメージ！
-      <br>
-    `;
-
-    if (
-      enemy.hp <= 0
-    ) {
-      break;
-    }
-
-    let enemyDamage =
-      Math.max(
-        1,
-        enemy.atk
-        - state.player.def
-      );
-
-    state.player.hp -=
-      enemyDamage;
-
-    log += `
-      敵が
-      ${enemyDamage}
-      ダメージ！
-      <br>
-    `;
-
-  }
-
-  if (
-    state.player.hp <= 0
-  ) {
-
-    document
-      .getElementById(
-        "event-text"
-      )
-      .innerHTML = log;
-
-    updateUI();
-
-    endGame();
-
-    return;
-
-  }
-
-  if (boss) {
-
-    state.bossKills++;
-
-  } else {
-
-    state.kills++;
-
-  }
-
-  document
-    .getElementById(
-      "event-text"
-    )
-    .innerHTML = log;
-
-  updateUI();
-
-}
-
-/* ========================= */
-/* お宝探索 */
-/* ========================= */
-
-function treasureEvent() {
-
-  const text =
-    document.getElementById(
-      "event-text"
-    );
-
-  if (
-    state.selectedCharacter
-    !== "mongrin"
-    &&
-    Math.random() < 0.1
-  ) {
-
-    if (
-      Math.random() < 0.5
-    ) {
-
-      const damage = 15;
-
-      state.player.hp -=
-        damage;
-
-      text.innerHTML = `
-        罠が発動！
-        ${damage}
-        ダメージ！
-      `;
-
-      updateUI();
-
-      if (
-        state.player.hp <= 0
-      ) {
-
-        endGame();
-
-      }
-
-      return;
-
-    } else {
-
-      text.innerHTML =
-        "罠の奥から強敵が現れた！";
-
-      battleEvent();
-
-      return;
-
-    }
-
-  }
-
-  const treasure =
-    TREASURES[
-      Math.floor(
-        Math.random()
-        * TREASURES.length
-      )
-    ];
-
-  state.treasureScore +=
-    treasure.value;
-
-  text.innerHTML = `
-    ${treasure.name}
-    を発見！
-    <br>
-
-    +${treasure.value}
-    SCORE
-  `;
-
-}
-
-/* ========================= */
-/* 時空の渦 */
-/* ========================= */
-
-function vortexEvent() {
-
-  let change =
-    Math.floor(
-      Math.random() * 121
-    ) - 60;
-
-  if (
-    state.selectedCharacter
-    === "fukkurou"
-    &&
-    change < 0
-  ) {
-
-    change *= -1;
-
-  }
-
-  state.time += change;
-
-  if (
-    state.time < 1
-  ) {
-
-    state.time = 1;
-
-  }
-
-  document
-    .getElementById(
-      "event-text"
-    )
-    .innerHTML = `
-      時空が歪んだ！
-      <br>
-
-      時間
-      ${
-        change >= 0
-          ? "+"
-          : ""
-      }
-      ${change}
-      秒
-    `;
-
-  updateUI();
-
-}
-
-/* ========================= */
-/* 休息 */
-/* ========================= */
-
-function restEvent() {
-
-  state.time -= 10;
-
-  const maxHp =
-    CHARACTERS[
-      state.selectedCharacter
-    ].hp;
-
-  state.player.hp = maxHp;
-
-  document
-    .getElementById(
-      "event-text"
-    )
-    .innerHTML =
-      "休息してHPを全回復した";
-
-  updateUI();
-
-}
-
-/* ========================= */
-/* 時の加速 */
-/* ========================= */
-
-function accelerationEvent() {
-
-  state.time -= 30;
-
-  state.floor += 3;
-
-  document
-    .getElementById(
-      "event-text"
-    )
-    .innerHTML = `
-      時が加速した！
-      <br>
-
-      3階層進んだ
-    `;
-
-  updateUI();
-
-}
-
-/* ========================= */
-/* ゲーム終了 */
-/* ========================= */
-
-function endGame() {
-
-  clearInterval(
-    state.timer
-  );
-
-  const score =
-
-    state.floor * 1000
-
-    +
-
-    state.kills * 500
-
-    +
-
-    state.bossKills * 2000
-
-    +
-
-    state.treasureScore;
-
-  document
-    .getElementById(
-      "result-info"
-    )
-    .innerHTML = `
-
-      <p>
-        到達階層:
-        ${state.floor}
-      </p>
-
-      <p>
-        敵撃破数:
-        ${state.kills}
-      </p>
-
-      <p>
-        ボス撃破数:
-        ${state.bossKills}
-      </p>
-
-      <p>
-        お宝スコア:
-        ${state.treasureScore}
-      </p>
-
-      <h3>
-        TOTAL SCORE:
-        ${score}
-      </h3>
-
-    `;
-
-  switchScreen(
-    screens.result
-  );
 
 }
