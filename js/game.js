@@ -504,3 +504,323 @@ function getEventName(type){
   }
 
 }
+
+/* ========================= */
+/* イベント実行 */
+/* ========================= */
+
+async function executeEvent(type){
+
+  if(state.gameEnded){
+    return;
+  }
+
+  if(
+    state.floor % 10 === 0
+  ){
+
+    await bossBattle();
+
+  } else {
+
+    switch(type){
+
+      case "battle":
+        await battleEvent();
+        break;
+
+      case "treasure":
+        await treasureEvent();
+        break;
+
+      case "vortex":
+        await vortexEvent();
+        break;
+
+      case "rest":
+        await restEvent();
+        break;
+
+      case "acceleration":
+        await accelerationEvent();
+        break;
+
+    }
+
+  }
+
+  if(
+    !state.gameEnded
+  ){
+
+    state.floor++;
+
+    updateUI();
+
+    generateChoices();
+
+    enableChoices();
+
+  }
+
+}
+
+/* ========================= */
+/* 通常戦闘 */
+/* ========================= */
+
+async function battleEvent(){
+
+  const baseEnemy =
+    ENEMIES[
+      Math.floor(
+        Math.random()
+        * ENEMIES.length
+      )
+    ];
+
+  const enemy = {
+
+    name:
+      baseEnemy.name,
+
+    hp:
+      baseEnemy.hp
+      + state.floor * 3,
+
+    atk:
+      baseEnemy.atk
+      + Math.floor(
+          state.floor / 3
+        ),
+
+    def:
+      baseEnemy.def
+      + Math.floor(
+          state.floor / 6
+        )
+
+  };
+
+  await autoBattle(
+    enemy,
+    false
+  );
+
+}
+
+/* ========================= */
+/* ボス戦 */
+/* ========================= */
+
+async function bossBattle(){
+
+  const baseBoss =
+    BOSSES[
+      Math.floor(
+        Math.random()
+        * BOSSES.length
+      )
+    ];
+
+  const enemy = {
+
+    name:
+      baseBoss.name,
+
+    hp:
+      baseBoss.hp
+      + state.floor * 8,
+
+    atk:
+      baseBoss.atk
+      + Math.floor(
+          state.floor / 2
+        ),
+
+    def:
+      baseBoss.def
+      + Math.floor(
+          state.floor / 5
+        )
+
+  };
+
+  await autoBattle(
+    enemy,
+    true
+  );
+
+}
+
+/* ========================= */
+/* 自動戦闘 */
+/* ========================= */
+
+async function autoBattle(
+  enemy,
+  isBoss
+){
+
+  clearLog();
+
+  await addLog(
+    isBoss
+      ? `ボス ${enemy.name} が現れた！`
+      : `${enemy.name} が現れた！`
+  );
+
+  while(
+
+    enemy.hp > 0
+    &&
+    state.player.hp > 0
+
+  ){
+
+    /* 主人公攻撃 */
+
+    let playerDamage =
+      Math.max(
+        1,
+        state.player.atk
+        - enemy.def
+      );
+
+    if(
+      Math.random() * 100
+      <
+      state.player.ctr
+    ){
+
+      playerDamage *= 2;
+
+      await addLog(
+        "クリティカル！"
+      );
+
+    }
+
+    enemy.hp -=
+      playerDamage;
+
+    await addLog(
+      `${state.player.name}
+       の攻撃！
+       ${enemy.name}
+       に
+       ${playerDamage}
+       ダメージ！`
+    );
+
+    updateUI();
+
+    await wait(700);
+
+    if(enemy.hp <= 0){
+
+      await addLog(
+        `${enemy.name}
+         を撃破！`
+      );
+
+      if(isBoss){
+        state.bossKills++;
+      } else {
+        state.kills++;
+      }
+
+      return;
+
+    }
+
+    /* 敵攻撃 */
+
+    let enemyDamage =
+      Math.max(
+        1,
+        enemy.atk
+        - state.player.def
+      );
+
+    state.player.hp -=
+      enemyDamage;
+
+    await addLog(
+      `${enemy.name}
+       の攻撃！
+       ${enemyDamage}
+       ダメージ！`
+    );
+
+    updateUI();
+
+    await wait(700);
+
+    if(
+      state.player.hp <= 0
+    ){
+
+      state.player.hp = 0;
+
+      updateUI();
+
+      await addLog(
+        `${state.player.name}
+         は力尽きた...`
+      );
+
+      gameOver(
+        "GAME OVER"
+      );
+
+      return;
+
+    }
+
+  }
+
+}
+
+/* ========================= */
+/* ログ */
+/* ========================= */
+
+function clearLog(){
+
+  document
+    .getElementById(
+      "event-text"
+    )
+    .innerHTML = "";
+
+}
+
+async function addLog(text){
+
+  const log =
+    document.getElementById(
+      "event-text"
+    );
+
+  log.innerHTML += `
+    <p>${text}</p>
+  `;
+
+  log.scrollTop =
+    log.scrollHeight;
+
+}
+
+function wait(ms){
+
+  return new Promise(resolve => {
+
+    setTimeout(
+      resolve,
+      ms
+    );
+
+  });
+
+}
