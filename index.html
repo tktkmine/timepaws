@@ -1,289 +1,139 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport"
-          content="width=device-width,
-          initial-scale=1.0,
-          maximum-scale=1.0,
-          user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <title>タイムパウズ</title>
+  <title>タイムパウズ</title>
 
-    <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <!-- ========================= -->
-    <!-- メインメニュー -->
-    <!-- ========================= -->
-    <section id="main-menu" class="screen active">
+<div id="menu-screen" class="screen active">
 
-        <div class="title-area">
-            <h1>タイムパウズ</h1>
-            <p class="version">Ver 0.1</p>
-        </div>
+  <h1>タイムパウズ</h1>
 
-        <div class="menu-buttons">
-            <button id="pve-button">PVE</button>
+  <p>5分時空ローグライク</p>
 
-            <button disabled>
-                デッキ編集
-                <span>(準備中)</span>
-            </button>
+  <button id="start-button">
+    ゲーム開始
+  </button>
 
-            <button disabled>
-                設定
-                <span>(準備中)</span>
-            </button>
-        </div>
+</div>
 
-    </section>
+<div id="character-screen" class="screen">
 
-    <!-- ========================= -->
-    <!-- デッキ選択 -->
-    <!-- ========================= -->
-    <section id="deck-select" class="screen">
+  <h2>主人公選択</h2>
 
-        <div class="top-bar">
-            <h2>PVE - デッキ選択</h2>
-            <button id="back-menu-button">戻る</button>
-        </div>
+  <div class="character-list">
 
-        <div class="deck-select-layout">
+    <button class="character-button"
+            data-character="woosan">
+      ウーサン
+    </button>
 
-            <!-- デッキ一覧 -->
-            <div class="deck-list">
+    <button class="character-button"
+            data-character="gorillin">
+      ゴリリン
+    </button>
 
-                <div class="deck-button"
-                     data-deck="woosan">
+    <button class="character-button"
+            data-character="fukkurou">
+      フックロウ
+    </button>
 
-                    <h3>ウーサン</h3>
-                    <p>高速展開アグロ</p>
+    <button class="character-button"
+            data-character="mongrin">
+      モングリン・モングラン
+    </button>
 
-                </div>
+  </div>
 
-                <div class="deck-button"
-                     data-deck="gorillin">
+  <div id="character-info"></div>
 
-                    <h3>ゴリリン</h3>
-                    <p>重量級ミッドレンジ</p>
+  <button id="confirm-character"
+          disabled>
+    冒険開始
+  </button>
 
-                </div>
+</div>
 
-                <div class="deck-button"
-                     data-deck="fukkurou">
+<div id="game-screen" class="screen">
 
-                    <h3>フックロウ</h3>
-                    <p>魔法コントロール</p>
+  <div class="top-bar">
 
-                </div>
+    <div>
+      残り時間:
+      <span id="time-display">
+        300
+      </span>
+    </div>
 
-            </div>
+    <div>
+      階層:
+      <span id="floor-display">
+        1
+      </span>
+    </div>
 
-            <!-- デッキ詳細 -->
-            <div class="deck-detail">
+    <div>
+      HP:
+      <span id="hp-display">
+        0
+      </span>
+    </div>
 
-                <h2 id="deck-name">
-                    デッキを選択
-                </h2>
+  </div>
 
-                <p id="deck-description">
-                    左からデッキを選んでください。
-                </p>
+  <div class="stats-bar">
 
-                <div id="deck-cards">
+    <div>
+      ATK:
+      <span id="atk-display"></span>
+    </div>
 
-                </div>
+    <div>
+      DEF:
+      <span id="def-display"></span>
+    </div>
 
-                <button id="confirm-deck-button"
-                        disabled>
+    <div>
+      CTR:
+      <span id="ctr-display"></span>%
+    </div>
 
-                    このデッキで出撃
+  </div>
 
-                </button>
+  <div id="event-text"
+       class="event-text">
+  </div>
 
-            </div>
+  <div class="choice-area">
 
-        </div>
+    <button id="choice-1"></button>
 
-    </section>
+    <button id="choice-2"></button>
 
-    <!-- ========================= -->
-    <!-- バトル画面 -->
-    <!-- ========================= -->
-    <section id="battle-screen" class="screen">
+  </div>
 
-        <!-- 上部情報 -->
-        <div class="battle-header">
+</div>
 
-            <div class="enemy-info">
-                <div>CPU HP:
-                    <span id="enemy-hp">20</span>
-                </div>
+<div id="result-screen" class="screen">
 
-                <div>マナ:
-                    <span id="enemy-mana">0</span>
-                </div>
-            </div>
+  <h2>探索終了</h2>
 
-            <div class="turn-info">
-                <div id="turn-display">
-                    TURN 1
-                </div>
+  <div id="result-info"></div>
 
-                <div id="phase-display">
-                    PLAYER TURN
-                </div>
-            </div>
+  <button id="back-menu">
+    メインメニューへ
+  </button>
 
-            <div class="player-info">
-                <div>HP:
-                    <span id="player-hp">20</span>
-                </div>
+</div>
 
-                <div>マナ:
-                    <span id="player-mana">0</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- 相手手札 -->
-        <div class="enemy-hand-area">
-
-            <div id="enemy-hand"
-                 class="hand">
-
-            </div>
-
-        </div>
-
-        <!-- 相手盤面 -->
-        <div class="field-area enemy-field">
-
-            <!-- 後衛 -->
-            <div class="field-row">
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="back"
-                     data-index="0"></div>
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="back"
-                     data-index="1"></div>
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="back"
-                     data-index="2"></div>
-
-            </div>
-
-            <!-- 前衛 -->
-            <div class="field-row">
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="front"
-                     data-index="0"></div>
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="front"
-                     data-index="1"></div>
-
-                <div class="field-slot enemy-slot"
-                     data-side="enemy"
-                     data-row="front"
-                     data-index="2"></div>
-
-            </div>
-
-        </div>
-
-        <!-- 時空異常 -->
-        <div id="anomaly-display">
-
-            時空安定
-
-        </div>
-
-        <!-- 自分盤面 -->
-        <div class="field-area player-field">
-
-            <!-- 前衛 -->
-            <div class="field-row">
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="front"
-                     data-index="0"></div>
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="front"
-                     data-index="1"></div>
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="front"
-                     data-index="2"></div>
-
-            </div>
-
-            <!-- 後衛 -->
-            <div class="field-row">
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="back"
-                     data-index="0"></div>
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="back"
-                     data-index="1"></div>
-
-                <div class="field-slot player-slot"
-                     data-side="player"
-                     data-row="back"
-                     data-index="2"></div>
-
-            </div>
-
-        </div>
-
-        <!-- 手札 -->
-        <div class="player-hand-area">
-
-            <div id="player-hand"
-                 class="hand">
-
-            </div>
-
-        </div>
-
-        <!-- 操作 -->
-        <div class="battle-controls">
-
-            <button id="end-turn-button">
-                ターン終了
-            </button>
-
-        </div>
-
-    </section>
-
-    <script src="js/data.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/battle.js"></script>
-    <script src="js/ai.js"></script>
-    <script src="js/main.js"></script>
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
 
 </body>
 </html>
