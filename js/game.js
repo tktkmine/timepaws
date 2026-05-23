@@ -824,3 +824,429 @@ function wait(ms){
   });
 
 }
+
+/* ========================= */
+/* お宝探索 */
+/* ========================= */
+
+async function treasureEvent(){
+
+  clearLog();
+
+  if(
+    state.selectedCharacter
+    !== "mongrin"
+    &&
+    Math.random() < 0.1
+  ){
+
+    await addLog(
+      "罠が発動した！"
+    );
+
+    await wait(700);
+
+    if(
+      Math.random() < 0.5
+    ){
+
+      const damage = 15;
+
+      state.player.hp -=
+        damage;
+
+      if(
+        state.player.hp < 0
+      ){
+        state.player.hp = 0;
+      }
+
+      updateUI();
+
+      await addLog(
+        `${damage}
+         ダメージを受けた！`
+      );
+
+      if(
+        state.player.hp <= 0
+      ){
+
+        await addLog(
+          `${state.player.name}
+           は力尽きた...`
+        );
+
+        gameOver(
+          "GAME OVER"
+        );
+
+      }
+
+      return;
+
+    } else {
+
+      await addLog(
+        "強敵が現れた！"
+      );
+
+      await wait(700);
+
+      await battleEvent();
+
+      return;
+
+    }
+
+  }
+
+  const treasure =
+    TREASURES[
+      Math.floor(
+        Math.random()
+        * TREASURES.length
+      )
+    ];
+
+  state.treasureScore +=
+    treasure.value;
+
+  await addLog(
+    `${treasure.name}
+     を発見！`
+  );
+
+  await wait(700);
+
+  await addLog(
+    `SCORE
+     +${treasure.value}`
+  );
+
+}
+
+/* ========================= */
+/* 時空の渦 */
+/* ========================= */
+
+async function vortexEvent(){
+
+  clearLog();
+
+  let change =
+    Math.floor(
+      Math.random() * 121
+    ) - 60;
+
+  if(
+    state.selectedCharacter
+    === "fukkurou"
+    &&
+    change < 0
+  ){
+
+    change *= -1;
+
+  }
+
+  state.time += change;
+
+  if(
+    state.time < 1
+  ){
+
+    state.time = 1;
+
+  }
+
+  updateUI();
+
+  await addLog(
+    `時空が歪んだ！`
+  );
+
+  await wait(700);
+
+  await addLog(
+    `時間 ${
+      change >= 0
+      ? "+"
+      : ""
+    }${change} 秒`
+  );
+
+}
+
+/* ========================= */
+/* 休息 */
+/* ========================= */
+
+async function restEvent(){
+
+  clearLog();
+
+  state.time -= 10;
+
+  const maxHp =
+    CHARACTERS[
+      state.selectedCharacter
+    ].hp;
+
+  state.player.hp =
+    maxHp;
+
+  updateUI();
+
+  await addLog(
+    "休息した"
+  );
+
+  await wait(700);
+
+  await addLog(
+    "HPが全回復した！"
+  );
+
+}
+
+/* ========================= */
+/* 時の加速 */
+/* ========================= */
+
+async function accelerationEvent(){
+
+  clearLog();
+
+  state.time -= 30;
+
+  state.floor += 3;
+
+  updateUI();
+
+  await addLog(
+    "時が加速した！"
+  );
+
+  await wait(700);
+
+  await addLog(
+    "3階層進んだ！"
+  );
+
+}
+
+/* ========================= */
+/* GAME OVER */
+/* ========================= */
+
+function gameOver(message){
+
+  state.gameEnded = true;
+
+  clearInterval(
+    state.timer
+  );
+
+  disableChoices();
+
+  document
+    .getElementById(
+      "event-text"
+    )
+    .innerHTML += `
+      <h3>${message}</h3>
+    `;
+
+  document
+    .getElementById(
+      "result-button"
+    )
+    .style.display =
+      "block";
+
+}
+
+/* ========================= */
+/* リザルト */
+/* ========================= */
+
+document
+  .getElementById(
+    "result-button"
+  )
+  .addEventListener(
+    "click",
+    showResult
+  );
+
+function showResult(){
+
+  const score =
+
+    state.floor * 1000
+
+    +
+
+    state.kills * 500
+
+    +
+
+    state.bossKills * 2000
+
+    +
+
+    state.treasureScore;
+
+  document
+    .getElementById(
+      "result-info"
+    )
+    .innerHTML = `
+
+      <p>
+        到達階層:
+        ${state.floor}
+      </p>
+
+      <p>
+        敵撃破数:
+        ${state.kills}
+      </p>
+
+      <p>
+        ボス撃破数:
+        ${state.bossKills}
+      </p>
+
+      <p>
+        お宝スコア:
+        ${state.treasureScore}
+      </p>
+
+      <hr>
+
+      <h3>
+        TOTAL SCORE:
+        ${score}
+      </h3>
+
+    `;
+
+  switchScreen(
+    screens.result
+  );
+
+}
+
+/* ========================= */
+/* 図鑑 */
+/* ========================= */
+
+function openEncyclopedia(){
+
+  switchScreen(
+    screens.encyclopedia
+  );
+
+  const area =
+    document.getElementById(
+      "encyclopedia-content"
+    );
+
+  let html =
+    "<h3>通常敵</h3>";
+
+  ENEMIES.forEach(enemy => {
+
+    html += `
+
+      <div class="enemy-box">
+
+        <strong>
+          ${enemy.name}
+        </strong>
+
+        <p>
+          HP:
+          ${enemy.hp}
+        </p>
+
+        <p>
+          ATK:
+          ${enemy.atk}
+        </p>
+
+        <p>
+          DEF:
+          ${enemy.def}
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+  html +=
+    "<h3>ボス</h3>";
+
+  BOSSES.forEach(enemy => {
+
+    html += `
+
+      <div class="enemy-box">
+
+        <strong>
+          ${enemy.name}
+        </strong>
+
+        <p>
+          HP:
+          ${enemy.hp}
+        </p>
+
+        <p>
+          ATK:
+          ${enemy.atk}
+        </p>
+
+        <p>
+          DEF:
+          ${enemy.def}
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+  html +=
+    "<h3>お宝</h3>";
+
+  TREASURES.forEach(treasure => {
+
+    html += `
+
+      <div class="treasure-box">
+
+        <strong>
+          ${treasure.name}
+        </strong>
+
+        <p>
+          VALUE:
+          ${treasure.value}
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+  area.innerHTML =
+    html;
+
+}
