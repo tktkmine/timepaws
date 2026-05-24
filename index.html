@@ -1,322 +1,236 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta name="viewport"
-        content="width=device-width,
-                 initial-scale=1.0,
-                 user-scalable=no">
-
-  <title>タイムパウズ</title>
-
-  <link rel="stylesheet"
-        href="style.css">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>時空ダンジョン</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<!-- ========================= -->
-<!-- メニュー -->
-<!-- ========================= -->
+  <!-- ========== メインメニュー ========== -->
+  <div id="screen-menu" class="screen active">
+    <div class="menu-bg"></div>
+    <div class="menu-content">
+      <img src="img/logo.png" alt="時空ダンジョン" class="logo" />
+      <h1 class="game-title">時空ダンジョン</h1>
+      <p class="game-subtitle">— 制限時間180秒の地下迷宮 —</p>
+      <div class="highscore-display">
+        <span class="hs-label">🏆 BEST</span>
+        <span id="high-score-value" class="hs-value">0</span>
+        <span class="hs-unit">pt</span>
+      </div>
+      <button class="btn btn-primary btn-large" onclick="showScreen('select')">
+        ▶ ゲームスタート
+      </button>
+      <p class="menu-hint">キャラクターを選んでダンジョンを踏破せよ！</p>
+    </div>
+  </div>
 
-<div id="menu-screen"
-     class="screen active">
+  <!-- ========== キャラクター選択 ========== -->
+  <div id="screen-select" class="screen">
+    <div class="screen-header">
+      <h2 class="screen-title">キャラクター選択</h2>
+    </div>
+    <div class="char-grid">
+      <div class="char-card" data-id="woosan" onclick="selectCharacter('woosan')">
+        <img src="img/woosan.png" alt="ウーサン" class="char-img" />
+        <div class="char-name">ウーサン</div>
+        <div class="char-sub-label">子ウサギ</div>
+      </div>
+      <div class="char-card" data-id="gorillin" onclick="selectCharacter('gorillin')">
+        <img src="img/gorillin.png" alt="ゴリリン" class="char-img" />
+        <div class="char-name">ゴリリン</div>
+        <div class="char-sub-label">子ゴリラ</div>
+      </div>
+      <div class="char-card" data-id="fukkurou" onclick="selectCharacter('fukkurou')">
+        <img src="img/fukkurou.png" alt="フックロウ" class="char-img" />
+        <div class="char-name">フックロウ</div>
+        <div class="char-sub-label">子フクロウ</div>
+      </div>
+      <div class="char-card" data-id="mongrin" onclick="selectCharacter('mongrin')">
+        <img src="img/mongrin.png" alt="モングリン" class="char-img" />
+        <div class="char-name">モングリン</div>
+        <div class="char-sub-label">モグラ親父</div>
+      </div>
+    </div>
+    <div id="char-detail" class="char-detail"></div>
+    <div class="select-actions">
+      <button class="btn btn-secondary" onclick="showScreen('menu')">← 戻る</button>
+      <button class="btn btn-primary" onclick="startGame()">冒険開始！</button>
+    </div>
+  </div>
 
-  <img src="img/logo.png"
-       class="logo">
+  <!-- ========== ダンジョン（イベント選択） ========== -->
+  <div id="screen-dungeon" class="screen">
+    <!-- ステータスバー -->
+    <div class="status-bar">
+      <div class="status-left">
+        <span id="player-name" class="status-char-name">―</span>
+        <div class="hp-container">
+          <span class="stat-label-sm">HP</span>
+          <div class="hp-bar-bg">
+            <div id="hp-bar" class="hp-bar-fill"></div>
+          </div>
+          <span id="hp-value" class="hp-text">― / ―</span>
+        </div>
+      </div>
+      <div class="status-center">
+        <div class="floor-display">
+          <span class="floor-label">FLOOR</span>
+          <span id="floor-value" class="floor-num">1</span>
+          <span class="floor-label">F</span>
+        </div>
+      </div>
+      <div class="status-right">
+        <div id="timer-wrap" class="timer-wrap">
+          <span class="timer-label">⏱</span>
+          <span id="timer-value" class="timer-value">180</span>
+          <span class="timer-unit">秒</span>
+        </div>
+        <div id="spacetime-status" class="spacetime-badge">通常時空</div>
+      </div>
+    </div>
 
-  <button id="start-button">
-    ゲーム開始
-  </button>
+    <!-- メッセージ -->
+    <div id="dungeon-message" class="dungeon-message">ダンジョンへ足を踏み入れた…</div>
 
-  <button id="help-button">
-    ヘルプ
-  </button>
+    <!-- イベント選択 -->
+    <div class="event-section">
+      <p class="event-prompt">— イベントを選択 —</p>
+      <div id="event-choices" class="event-choices"></div>
+    </div>
+  </div>
 
-  <button id="enemy-book-button">
-    敵図鑑
-  </button>
+  <!-- ========== 戦闘画面 ========== -->
+  <div id="screen-battle" class="screen">
+    <div class="battle-header">
+      <h2 id="battle-title" class="battle-title">⚔️ BATTLE</h2>
+    </div>
 
-  <button id="treasure-book-button">
-    お宝図鑑
-  </button>
+    <!-- 敵 -->
+    <div class="combatant-block enemy-block">
+      <div class="combatant-name-row">
+        <span id="enemy-name" class="combatant-name enemy-name">―</span>
+      </div>
+      <div class="hp-container">
+        <span class="stat-label-sm">HP</span>
+        <div class="hp-bar-bg">
+          <div id="enemy-hp-bar" class="hp-bar-fill enemy-bar"></div>
+        </div>
+        <span id="enemy-hp-value" class="hp-text">―</span>
+      </div>
+    </div>
 
-</div>
+    <div class="vs-divider">VS</div>
 
-<!-- ========================= -->
-<!-- キャラ選択 -->
-<!-- ========================= -->
+    <!-- プレイヤー -->
+    <div class="combatant-block player-block">
+      <div class="combatant-name-row">
+        <span id="battle-player-name" class="combatant-name player-name">―</span>
+      </div>
+      <div class="hp-container">
+        <span class="stat-label-sm">HP</span>
+        <div class="hp-bar-bg">
+          <div id="battle-player-hp-bar" class="hp-bar-fill"></div>
+        </div>
+        <span id="battle-player-hp" class="hp-text">―</span>
+      </div>
+    </div>
 
-<div id="character-screen"
-     class="screen scroll-screen">
+    <!-- バトルログ -->
+    <div id="battle-log" class="battle-log"></div>
 
-  <h2>主人公選択</h2>
-
-  <div class="character-list">
-
-    <button class="character-button"
-            data-character="woosan">
-      ウーサン
+    <!-- 開始ボタン -->
+    <button id="battle-start-btn" class="btn btn-primary battle-btn">
+      ⚔️ 戦闘開始！
     </button>
-
-    <button class="character-button"
-            data-character="gorillin">
-      ゴリリン
-    </button>
-
-    <button class="character-button"
-            data-character="fukkurou">
-      フックロウ
-    </button>
-
-    <button class="character-button"
-            data-character="mongrin">
-      モングリン
-    </button>
-
   </div>
 
-  <img id="character-image"
-       class="character-image">
-
-  <div id="character-info"></div>
-
-  <button id="confirm-character"
-          disabled>
-
-    冒険開始
-
-  </button>
-
-</div>
-
-<!-- ========================= -->
-<!-- ゲーム -->
-<!-- ========================= -->
-
-<div id="game-screen"
-     class="screen">
-
-  <div class="top-bar">
-
-    <div>
-      ⏳
-      <span id="time-display"></span>
+  <!-- ========== 結果画面 ========== -->
+  <div id="screen-result" class="screen">
+    <div class="result-content">
+      <h2 id="result-reason" class="result-reason">💀 戦闘敗北…</h2>
+      <div class="result-info">
+        <div class="result-row">
+          <span class="result-label">使用キャラ</span>
+          <span id="result-character" class="result-val">―</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">到達フロア</span>
+          <span id="result-floor" class="result-val">― F</span>
+        </div>
+      </div>
+      <button id="go-score-btn" class="btn btn-primary btn-large">
+        📊 スコアを確認する
+      </button>
     </div>
+  </div>
 
-    <div>
-      🏰
-      <span id="floor-display"></span>
+  <!-- ========== スコア画面 ========== -->
+  <div id="screen-score" class="screen">
+    <div class="score-content">
+      <h2 class="score-title">📊 SCORE</h2>
+      <div id="new-record" class="new-record" style="display:none">
+        🎉 NEW RECORD！
+      </div>
+      <div class="score-breakdown">
+        <div class="score-row">
+          <span class="score-label">到達フロア</span>
+          <span id="score-floor" class="score-val">―</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">敵撃破</span>
+          <span id="score-enemy" class="score-val">―</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">ボス撃破</span>
+          <span id="score-boss" class="score-val">―</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">お宝</span>
+          <span id="score-treasure" class="score-val">―</span>
+        </div>
+        <div class="score-row total-row">
+          <span class="score-label">TOTAL</span>
+          <span id="score-total" class="score-val total-val">―</span>
+        </div>
+      </div>
+
+      <!-- 獲得宝一覧 -->
+      <div class="treasure-section">
+        <h3 class="treasure-title">💎 獲得したお宝</h3>
+        <ul id="treasure-list" class="treasure-list"></ul>
+      </div>
+
+      <div class="highscore-row">
+        <span class="hs-label">🏆 BEST</span>
+        <span id="score-highscore" class="hs-value">―</span>
+        <span class="hs-unit">pt</span>
+      </div>
+
+      <button id="back-menu-btn" class="btn btn-primary btn-large">
+        🏠 メインメニューへ
+      </button>
     </div>
-
   </div>
 
-  <div class="hp-area">
-
-    <div>
-      HP:
-      <span id="hp-display"></span>
+  <!-- ========== イベント結果モーダル ========== -->
+  <div id="event-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modal-title" class="modal-title">イベント</h3>
+      <p id="modal-message" class="modal-message"></p>
+      <button id="modal-btn" class="btn btn-primary">次へ進む →</button>
     </div>
-
-    <div class="hp-bar">
-
-      <div id="hp-fill"></div>
-
-    </div>
-
   </div>
 
-  <div class="stats-bar">
+  <!-- ========== トースト通知 ========== -->
+  <div id="toast" class="toast"></div>
 
-    <div>
-      ATK:
-      <span id="atk-display"></span>
-    </div>
-
-    <div>
-      DEF:
-      <span id="def-display"></span>
-    </div>
-
-    <div>
-      CTR:
-      <span id="ctr-display"></span>%
-    </div>
-
-  </div>
-
-  <div id="event-text"
-       class="event-text">
-  </div>
-
-  <div class="choice-area">
-
-    <button id="choice-1"></button>
-
-    <button id="choice-2"></button>
-
-  </div>
-
-  <button id="result-button"
-          style="display:none;">
-
-    結果を見る
-
-  </button>
-
-</div>
-
-<!-- ========================= -->
-<!-- リザルト -->
-<!-- ========================= -->
-
-<div id="result-screen"
-     class="screen">
-
-  <h2>探索終了</h2>
-
-  <div id="result-info"></div>
-
-  <button id="back-menu">
-    メインメニューへ
-  </button>
-
-</div>
-
-<!-- ========================= -->
-<!-- ヘルプ -->
-<!-- ========================= -->
-
-<div id="help-screen"
-     class="screen scroll-screen">
-
-  <h2>ヘルプ</h2>
-
-  <div class="help-box">
-
-    <h3>ゲーム説明</h3>
-
-    <p>
-      180秒の時間で
-      ハイスコアを目指せ。
-    </p>
-
-    <p>
-      制限時間がなくなるか、
-      HPがなくなると
-      ゲーム終了。
-    </p>
-
-    <hr>
-
-    <p>
-      【スコア計算式】
-    </p>
-
-    <p>
-      到達階層×1000
-    </p>
-
-    <p>
-      敵撃破数×500
-    </p>
-
-    <p>
-      ボス撃破数×2000
-    </p>
-
-    <p>
-      お宝スコア=
-      宝の価値
-    </p>
-
-    <hr>
-
-    <h3>イベント説明</h3>
-
-    <p>
-      【戦闘】
-      敵と戦う。
-      自動戦闘となり、
-      主人公→敵→主人公→敵...
-      の順で攻撃。
-    </p>
-
-    <p>
-      【お宝探し】
-      お宝を獲得。
-      罠や敵が待つ場合もある。
-    </p>
-
-    <p>
-      【時空の渦】
-      制限時間が変動。
-      ※最大±60秒
-    </p>
-
-    <p>
-      【休息】
-      HP全回復。
-      ※時間30秒消費
-    </p>
-
-    <p>
-      【時の加速】
-      3階層進む。
-      ※時間30秒消費
-    </p>
-
-  </div>
-
-  <button class="back-button">
-    戻る
-  </button>
-
-</div>
-
-<!-- ========================= -->
-<!-- 敵図鑑 -->
-<!-- ========================= -->
-
-<div id="enemy-book-screen"
-     class="screen">
-
-  <h2>敵図鑑</h2>
-
-  <div id="enemy-book-content"
-       class="book-content">
-  </div>
-
-  <button class="back-button">
-    戻る
-  </button>
-
-</div>
-
-<!-- ========================= -->
-<!-- お宝図鑑 -->
-<!-- ========================= -->
-
-<div id="treasure-book-screen"
-     class="screen">
-
-  <h2>お宝図鑑</h2>
-
-  <div id="treasure-book-content"
-       class="book-content">
-  </div>
-
-  <button class="back-button">
-    戻る
-  </button>
-
-</div>
-
-<script src="js/data.js"></script>
-<script src="js/game.js"></script>
-
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
