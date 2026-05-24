@@ -1,16 +1,14 @@
 // ============================================================
-// game.js - ゲームロジック全般
+// game.js - ゲームロジック全般（修正版）
 // ============================================================
 
 // ============================================================
 // ゲーム状態管理
 // ============================================================
 const GameState = {
-  // 画面管理
-  screen: "menu", // menu | select | dungeon | battle | result | score
-
-  // プレイヤー
+  screen: "menu",
   character: null,
+  selectedCharId: null,
   player: {
     currentHp: 0,
     maxHp: 0,
@@ -18,39 +16,29 @@ const GameState = {
     def: 0,
     ctr: 0,
   },
-
-  // ダンジョン進行
   floor: 1,
   timeLeft: 180,
   timeSpeedMultiplier: 1.0,
   timerInterval: null,
-
-  // 戦闘
   enemy: null,
   inBattle: false,
   battleLog: [],
-
-  // スコア関連
   enemiesDefeated: 0,
   bossesDefeated: 0,
   treasures: [],
   reachedFloor: 1,
-
-  // イベント
   currentEvents: [],
   spacetimeActive: null,
-
-  // ハイスコア
   highScore: parseInt(localStorage.getItem("dungeonHighScore") || "0"),
 };
 
 // ============================================================
-// 初期化・画面制御
+// 初期化
 // ============================================================
-
 function init() {
   showScreen("menu");
   updateHighScoreDisplay();
+  buildHelpContent();
 }
 
 function showScreen(name) {
@@ -68,14 +56,12 @@ function updateHighScoreDisplay() {
 // ============================================================
 // キャラクター選択
 // ============================================================
-
 function selectCharacter(id) {
   document.querySelectorAll(".char-card").forEach((c) => c.classList.remove("selected"));
   const card = document.querySelector(`.char-card[data-id="${id}"]`);
   if (card) card.classList.add("selected");
   GameState.selectedCharId = id;
 
-  // 詳細表示
   const chara = CHARACTERS[id];
   const detail = document.getElementById("char-detail");
   if (detail) {
@@ -84,10 +70,22 @@ function selectCharacter(id) {
         <h3>${chara.name} <span class="char-sub">${chara.sub}</span></h3>
         <p class="char-desc">${chara.description}</p>
         <div class="stat-grid">
-          <div class="stat-item"><span class="stat-label">HP</span><span class="stat-val">${chara.hp}</span></div>
-          <div class="stat-item"><span class="stat-label">ATK</span><span class="stat-val">${chara.atk}</span></div>
-          <div class="stat-item"><span class="stat-label">DEF</span><span class="stat-val">${chara.def}</span></div>
-          <div class="stat-item"><span class="stat-label">CTR</span><span class="stat-val">${chara.ctr}%</span></div>
+          <div class="stat-item">
+            <span class="stat-label">HP</span>
+            <span class="stat-val">${chara.hp}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ATK</span>
+            <span class="stat-val">${chara.atk}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">DEF</span>
+            <span class="stat-val">${chara.def}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">CTR</span>
+            <span class="stat-val">${chara.ctr}%</span>
+          </div>
         </div>
       </div>
     `;
@@ -102,23 +100,23 @@ function startGame() {
     return;
   }
   const chara = CHARACTERS[id];
-  GameState.character = chara;
-  GameState.player = {
+  GameState.character        = chara;
+  GameState.player           = {
     currentHp: chara.hp,
-    maxHp: chara.hp,
-    atk: chara.atk,
-    def: chara.def,
-    ctr: chara.ctr,
+    maxHp:     chara.hp,
+    atk:       chara.atk,
+    def:       chara.def,
+    ctr:       chara.ctr,
   };
-  GameState.floor = 1;
-  GameState.timeLeft = 180;
+  GameState.floor              = 1;
+  GameState.timeLeft           = 180;
   GameState.timeSpeedMultiplier = 1.0;
-  GameState.enemiesDefeated = 0;
-  GameState.bossesDefeated = 0;
-  GameState.treasures = [];
-  GameState.reachedFloor = 1;
-  GameState.spacetimeActive = null;
-  GameState.battleLog = [];
+  GameState.enemiesDefeated    = 0;
+  GameState.bossesDefeated     = 0;
+  GameState.treasures          = [];
+  GameState.reachedFloor       = 1;
+  GameState.spacetimeActive    = null;
+  GameState.battleLog          = [];
 
   showScreen("dungeon");
   updateDungeonUI();
@@ -129,7 +127,6 @@ function startGame() {
 // ============================================================
 // タイマー
 // ============================================================
-
 function startTimer() {
   clearInterval(GameState.timerInterval);
   GameState.timerInterval = setInterval(() => {
@@ -153,46 +150,37 @@ function updateTimerUI() {
   const el = document.getElementById("timer-value");
   if (!el) return;
   const t = Math.max(0, GameState.timeLeft);
-  const secs = Math.ceil(t);
-  el.textContent = secs;
-  // 残り30秒以下で赤く
-  el.parentElement.classList.toggle("danger", t <= 30);
+  el.textContent = Math.ceil(t);
+  const wrap = document.getElementById("timer-wrap");
+  if (wrap) wrap.classList.toggle("danger", t <= 30);
 }
 
 // ============================================================
 // ダンジョンUI更新
 // ============================================================
-
 function updateDungeonUI() {
-  // フロア
-  const floorEl = document.getElementById("floor-value");
-  if (floorEl) floorEl.textContent = GameState.floor;
+  setText("floor-value", GameState.floor);
+  setText("player-name", GameState.character ? GameState.character.name : "―");
 
-  // HP
-  const hpEl = document.getElementById("hp-value");
-  const hpBarEl = document.getElementById("hp-bar");
-  if (hpEl) hpEl.textContent = `${GameState.player.currentHp} / ${GameState.player.maxHp}`;
-  if (hpBarEl) {
-    const pct = (GameState.player.currentHp / GameState.player.maxHp) * 100;
-    hpBarEl.style.width = `${pct}%`;
-    hpBarEl.className = "hp-bar-fill";
-    if (pct <= 25) hpBarEl.classList.add("critical");
-    else if (pct <= 50) hpBarEl.classList.add("low");
+  const p = GameState.player;
+  setText("hp-value", `${p.currentHp} / ${p.maxHp}`);
+  const hpBar = document.getElementById("hp-bar");
+  if (hpBar) {
+    const pct = (p.currentHp / p.maxHp) * 100;
+    hpBar.style.width = `${pct}%`;
+    hpBar.className = "hp-bar-fill";
+    if (pct <= 25)      hpBar.classList.add("critical");
+    else if (pct <= 50) hpBar.classList.add("low");
   }
 
-  // キャラ名
-  const nameEl = document.getElementById("player-name");
-  if (nameEl && GameState.character) nameEl.textContent = GameState.character.name;
-
-  // 時空状態
   const stEl = document.getElementById("spacetime-status");
   if (stEl) {
     if (GameState.spacetimeActive) {
       stEl.textContent = GameState.spacetimeActive.name;
-      stEl.className = `spacetime-badge active-${GameState.spacetimeActive.id}`;
+      stEl.className   = `spacetime-badge active-${GameState.spacetimeActive.id}`;
     } else {
       stEl.textContent = "通常時空";
-      stEl.className = "spacetime-badge";
+      stEl.className   = "spacetime-badge";
     }
   }
 }
@@ -200,16 +188,15 @@ function updateDungeonUI() {
 // ============================================================
 // イベント生成・選択
 // ============================================================
-
 function generateEvents() {
-  const events = pickTwoEvents(GameState.character);
+  const events    = pickTwoEvents(GameState.character);
   GameState.currentEvents = events;
 
   const container = document.getElementById("event-choices");
   if (!container) return;
   container.innerHTML = "";
 
-  events.forEach((ev, i) => {
+  events.forEach((ev) => {
     const btn = document.createElement("button");
     btn.className = "event-btn";
     btn.innerHTML = `
@@ -220,14 +207,11 @@ function generateEvents() {
     container.appendChild(btn);
   });
 
-  // メッセージ
   setDungeonMessage(`${GameState.floor}F に到達！どちらのイベントに挑む？`);
 }
 
 function chooseEvent(eventId) {
-  // ボタン無効化
   document.querySelectorAll(".event-btn").forEach((b) => (b.disabled = true));
-
   switch (eventId) {
     case "battle":       startBattle(false); break;
     case "boss":         startBattle(true);  break;
@@ -241,39 +225,38 @@ function chooseEvent(eventId) {
 // ============================================================
 // 戦闘処理
 // ============================================================
-
 function startBattle(isBoss) {
   stopTimer();
-  const enemy = isBoss ? getRandomBoss() : getScaledEnemy(GameState.floor);
-  GameState.enemy = enemy;
+  const enemy        = isBoss ? getRandomBoss() : getScaledEnemy(GameState.floor);
+  GameState.enemy    = enemy;
   GameState.inBattle = true;
   GameState.battleLog = [];
 
   showScreen("battle");
   updateBattleUI(isBoss);
-  setMessage("battle-message", `${enemy.name} があらわれた！`);
 
-  // バトル開始ボタンを表示
+  const logEl = document.getElementById("battle-log");
+  if (logEl) logEl.innerHTML = "";
+
   const startBtn = document.getElementById("battle-start-btn");
   if (startBtn) {
     startBtn.style.display = "block";
-    startBtn.onclick = () => runAutoBattle(isBoss);
+    startBtn.disabled      = false;
+    startBtn.onclick       = () => runAutoBattle(isBoss);
   }
 }
 
 function updateBattleUI(isBoss) {
-  const enemy = GameState.enemy;
+  const enemy  = GameState.enemy;
   const player = GameState.player;
 
-  // 敵情報
-  setText("enemy-name", enemy.name);
+  setText("enemy-name",     enemy.name);
   setText("enemy-hp-value", `${enemy.currentHp} / ${enemy.hp}`);
   updateBar("enemy-hp-bar", enemy.currentHp, enemy.hp);
-  document.getElementById("battle-title").textContent = isBoss ? "💀 BOSS BATTLE" : "⚔️ BATTLE";
 
-  // プレイヤー情報
+  setText("battle-title",      isBoss ? "💀 BOSS BATTLE" : "⚔️ BATTLE");
   setText("battle-player-name", GameState.character.name);
-  setText("battle-player-hp", `${player.currentHp} / ${player.maxHp}`);
+  setText("battle-player-hp",  `${player.currentHp} / ${player.maxHp}`);
   updateBar("battle-player-hp-bar", player.currentHp, player.maxHp);
 }
 
@@ -282,37 +265,37 @@ async function runAutoBattle(isBoss) {
   if (startBtn) startBtn.style.display = "none";
 
   const player = GameState.player;
-  const enemy = GameState.enemy;
+  const enemy  = GameState.enemy;
 
   while (player.currentHp > 0 && enemy.currentHp > 0) {
     // プレイヤー攻撃
     const playerCrit = chance(player.ctr);
-    let playerDmg = Math.max(1, player.atk - enemy.def);
+    let playerDmg    = Math.max(1, player.atk - enemy.def);
     if (playerCrit) playerDmg *= 2;
-    enemy.currentHp = Math.max(0, enemy.currentHp - playerDmg);
+    enemy.currentHp  = Math.max(0, enemy.currentHp - playerDmg);
 
     addBattleLog(
-      `${GameState.character.name} の攻撃！${playerCrit ? "【クリティカル！】" : ""} ${enemy.name} に ${playerDmg} ダメージ！`
+      `${GameState.character.name} の攻撃！${playerCrit ? "【クリティカル！】" : ""}` +
+      ` ${enemy.name} に ${playerDmg} ダメージ！`
     );
     updateBattleUI(isBoss);
     await sleep(600);
-
     if (enemy.currentHp <= 0) break;
 
     // 敵攻撃
     const enemyCrit = chance(enemy.ctr);
-    let enemyDmg = Math.max(1, enemy.atk - player.def);
+    let enemyDmg    = Math.max(1, enemy.atk - player.def);
     if (enemyCrit) enemyDmg *= 2;
     player.currentHp = Math.max(0, player.currentHp - enemyDmg);
 
     addBattleLog(
-      `${enemy.name} の攻撃！${enemyCrit ? "【クリティカル！】" : ""} ${GameState.character.name} に ${enemyDmg} ダメージ！`
+      `${enemy.name} の攻撃！${enemyCrit ? "【クリティカル！】" : ""}` +
+      ` ${GameState.character.name} に ${enemyDmg} ダメージ！`
     );
     updateBattleUI(isBoss);
     await sleep(600);
   }
 
-  // 結果判定
   if (player.currentHp <= 0) {
     addBattleLog(`${GameState.character.name} は倒れた…`);
     await sleep(800);
@@ -320,36 +303,25 @@ async function runAutoBattle(isBoss) {
   } else {
     addBattleLog(`${enemy.name} を倒した！`);
     if (isBoss) GameState.bossesDefeated++;
-    else GameState.enemiesDefeated++;
+    else        GameState.enemiesDefeated++;
     await sleep(800);
-    battleVictory(isBoss);
+    showScreen("dungeon");
+    advanceFloor();
   }
-}
-
-function battleVictory(isBoss) {
-  showScreen("dungeon");
-  advanceFloor();
 }
 
 // ============================================================
 // イベント処理
 // ============================================================
-
 function doTreasure() {
-  const noTrap = GameState.character.noTreasureTrap;
-  let message = "";
-  let foundTreasure = null;
-
-  // 宝発見（必ず試みる）
-  foundTreasure = getRandomTreasure();
+  const noTrap      = GameState.character.noTreasureTrap;
+  const foundTreasure = getRandomTreasure();
   GameState.treasures.push(foundTreasure);
-  message += `💎 ${foundTreasure.name}（${foundTreasure.value}pt）を発見！\n`;
+  let message = `💎 ${foundTreasure.name}（${foundTreasure.value}pt）を発見！\n`;
 
-  // 罠判定（モングリンは罠なし）
   if (!noTrap && chance(10)) {
     message += `⚠️ 罠が発動！\n`;
     if (chance(50)) {
-      // ダメージ
       const dmg = Math.floor(GameState.player.maxHp * 0.3);
       GameState.player.currentHp = Math.max(1, GameState.player.currentHp - dmg);
       message += `💥 ${dmg} のダメージを受けた！`;
@@ -358,11 +330,10 @@ function doTreasure() {
         advanceFloor();
       });
     } else {
-      // 強敵との戦闘
       message += `👹 強敵が現れた！`;
       showEventResult("お宝探し", message, () => {
         updateDungeonUI();
-        startBattle(false); // 強敵は通常敵スケール（高フロア補正あり）
+        startBattle(false);
       });
     }
   } else {
@@ -376,16 +347,13 @@ function doTreasure() {
 function doVortex() {
   let timeDelta;
   if (GameState.character.vortexAlwaysPositive) {
-    // フックロウは必ず時間増加
     timeDelta = randInt(1, 60);
   } else {
     timeDelta = randInt(-60, 60);
   }
-
   GameState.timeLeft = Math.max(1, GameState.timeLeft + timeDelta);
   const sign = timeDelta >= 0 ? "+" : "";
-  const msg = `🌀 時空の渦に飲まれた！\n時間が ${sign}${timeDelta} 秒変動した！\n残り時間: ${Math.ceil(GameState.timeLeft)} 秒`;
-
+  const msg  = `🌀 時空の渦に飲まれた！\n時間が ${sign}${timeDelta} 秒変動した！\n残り時間: ${Math.ceil(GameState.timeLeft)} 秒`;
   showEventResult("時空の渦", msg, () => {
     updateDungeonUI();
     advanceFloor();
@@ -408,7 +376,7 @@ function doRest() {
 }
 
 function doAcceleration() {
-  const cost = 20;
+  const cost    = 20;
   const advance = 3;
   if (GameState.timeLeft <= cost) {
     showEventResult("時の加速", "⏳ 時間が足りず加速できなかった…", () => advanceFloor());
@@ -425,7 +393,6 @@ function doAcceleration() {
 // ============================================================
 // 階層進行
 // ============================================================
-
 function advanceFloor() {
   advanceFloorBy(1);
 }
@@ -443,8 +410,8 @@ function advanceFloorBy(n) {
 function checkSpacetimeEvent() {
   if (chance(5)) {
     const ev = randomPick(SPACETIME_EVENTS);
-    GameState.spacetimeActive = ev;
-    GameState.timeSpeedMultiplier = ev.speedMultiplier;
+    GameState.spacetimeActive      = ev;
+    GameState.timeSpeedMultiplier  = ev.speedMultiplier;
     showToast(`✨ 時空イベント発生！\n${ev.name}\n${ev.description}`, 3000);
   }
 }
@@ -452,14 +419,12 @@ function checkSpacetimeEvent() {
 // ============================================================
 // ゲームオーバー・スコア
 // ============================================================
-
 function gameOver(reason) {
   stopTimer();
   GameState.reachedFloor = GameState.floor;
   showScreen("result");
-
-  setText("result-reason", reason === "時間切れ" ? "⏰ 時間切れ…" : "💀 戦闘敗北…");
-  setText("result-floor", `${GameState.reachedFloor} F`);
+  setText("result-reason",    reason === "時間切れ" ? "⏰ 時間切れ…" : "💀 戦闘敗北…");
+  setText("result-floor",     `${GameState.reachedFloor} F`);
   setText("result-character", GameState.character ? GameState.character.name : "");
 
   const btn = document.getElementById("go-score-btn");
@@ -473,7 +438,6 @@ function showScore() {
   const treasureScore = GameState.treasures.reduce((sum, t) => sum + t.value, 0);
   const total         = floorScore + enemyScore + bossScore + treasureScore;
 
-  // ハイスコア更新
   let isNewRecord = false;
   if (total > GameState.highScore) {
     GameState.highScore = total;
@@ -482,27 +446,27 @@ function showScore() {
   }
 
   showScreen("score");
-
-  setText("score-floor",    `${GameState.reachedFloor}F × 1000 = ${floorScore.toLocaleString()} pt`);
-  setText("score-enemy",    `${GameState.enemiesDefeated}体 × 500 = ${enemyScore.toLocaleString()} pt`);
-  setText("score-boss",     `${GameState.bossesDefeated}体 × 2000 = ${bossScore.toLocaleString()} pt`);
-  setText("score-treasure", `${treasureScore.toLocaleString()} pt`);
-  setText("score-total",    total.toLocaleString());
+  setText("score-floor",     `${GameState.reachedFloor}F × 1000 = ${floorScore.toLocaleString()} pt`);
+  setText("score-enemy",     `${GameState.enemiesDefeated}体 × 500 = ${enemyScore.toLocaleString()} pt`);
+  setText("score-boss",      `${GameState.bossesDefeated}体 × 2000 = ${bossScore.toLocaleString()} pt`);
+  setText("score-treasure",  `${treasureScore.toLocaleString()} pt`);
+  setText("score-total",     total.toLocaleString());
   setText("score-highscore", GameState.highScore.toLocaleString());
 
   const newRecordEl = document.getElementById("new-record");
   if (newRecordEl) newRecordEl.style.display = isNewRecord ? "block" : "none";
 
-  // 獲得宝一覧
   const treasureList = document.getElementById("treasure-list");
   if (treasureList) {
-    if (GameState.treasures.length === 0) {
-      treasureList.innerHTML = "<li>なし</li>";
-    } else {
-      treasureList.innerHTML = GameState.treasures
-        .map((t) => `<li><span class="t-rank rank-${t.rank}">${t.rank}</span> ${t.name} <span class="t-val">+${t.value}pt</span></li>`)
-        .join("");
-    }
+    treasureList.innerHTML = GameState.treasures.length === 0
+      ? "<li>なし</li>"
+      : GameState.treasures.map((t) =>
+          `<li>
+            <span class="t-rank rank-${t.rank}">${t.rank}</span>
+            ${t.name}
+            <span class="t-val">+${t.value}pt</span>
+          </li>`
+        ).join("");
   }
 
   const btn = document.getElementById("back-menu-btn");
@@ -517,18 +481,16 @@ function backToMenu() {
 // ============================================================
 // イベント結果モーダル
 // ============================================================
-
 function showEventResult(title, message, callback) {
   stopTimer();
-  const modal = document.getElementById("event-modal");
+  const modal    = document.getElementById("event-modal");
   const modalTitle = document.getElementById("modal-title");
-  const modalMsg = document.getElementById("modal-message");
-  const modalBtn = document.getElementById("modal-btn");
-
+  const modalMsg   = document.getElementById("modal-message");
+  const modalBtn   = document.getElementById("modal-btn");
   if (!modal) { callback(); return; }
 
   modalTitle.textContent = title;
-  modalMsg.innerHTML = message.replace(/\n/g, "<br>");
+  modalMsg.innerHTML     = message.replace(/\n/g, "<br>");
   modal.classList.add("visible");
 
   modalBtn.onclick = () => {
@@ -538,9 +500,85 @@ function showEventResult(title, message, callback) {
 }
 
 // ============================================================
+// ヘルプ
+// ============================================================
+function buildHelpContent() {
+  // 敵テーブル（通常敵）
+  const enemyBody = document.getElementById("enemy-table-body");
+  if (enemyBody) {
+    enemyBody.innerHTML = ENEMIES.map((e) =>
+      `<tr>
+        <td>${e.name}</td>
+        <td>${e.hp}</td>
+        <td>${e.atk}</td>
+        <td>${e.def}</td>
+        <td>${e.ctr}%</td>
+      </tr>`
+    ).join("");
+  }
+
+  // ボステーブル
+  const bossBody = document.getElementById("boss-table-body");
+  if (bossBody) {
+    bossBody.innerHTML = BOSSES.map((b) =>
+      `<tr class="boss-row">
+        <td>${b.name}</td>
+        <td>${b.hp}</td>
+        <td>${b.atk}</td>
+        <td>${b.def}</td>
+        <td>${b.ctr}%</td>
+      </tr>`
+    ).join("");
+  }
+
+  // お宝一覧
+  const treasureHelp = document.getElementById("treasure-help-list");
+  if (treasureHelp) {
+    const ranks = ["低級", "中級", "高級", "伝説"];
+    treasureHelp.innerHTML = ranks.map((rank) => {
+      const items = TREASURES.filter((t) => t.rank === rank);
+      return `
+        <div class="treasure-rank-group">
+          <div class="treasure-rank-label rank-label-${rank}">${rank}宝（${items[0].value}pt）</div>
+          ${items.map((t) =>
+            `<div class="treasure-help-item">
+              <span class="t-rank rank-${t.rank}">${t.rank}</span>
+              <span>${t.name}</span>
+              <span class="t-val">+${t.value}pt</span>
+            </div>`
+          ).join("")}
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+function openHelp() {
+  const modal = document.getElementById("help-modal");
+  if (modal) {
+    modal.classList.add("visible");
+    switchHelpTab("actions");
+  }
+}
+
+function closeHelp() {
+  const modal = document.getElementById("help-modal");
+  if (modal) modal.classList.remove("visible");
+}
+
+function switchHelpTab(tab) {
+  document.querySelectorAll(".help-tab").forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".help-panel").forEach((p) => p.classList.remove("active"));
+
+  const activeTab = document.querySelector(`.help-tab[onclick="switchHelpTab('${tab}')"]`);
+  const activePanel = document.getElementById(`help-${tab}`);
+  if (activeTab)  activeTab.classList.add("active");
+  if (activePanel) activePanel.classList.add("active");
+}
+
+// ============================================================
 // バトルログ
 // ============================================================
-
 function addBattleLog(text) {
   GameState.battleLog.push(text);
   const logEl = document.getElementById("battle-log");
@@ -554,7 +592,6 @@ function addBattleLog(text) {
 // ============================================================
 // ユーティリティ
 // ============================================================
-
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -576,8 +613,7 @@ function setDungeonMessage(text) {
 function updateBar(id, current, max) {
   const el = document.getElementById(id);
   if (!el) return;
-  const pct = Math.max(0, (current / max) * 100);
-  el.style.width = `${pct}%`;
+  el.style.width = `${Math.max(0, (current / max) * 100)}%`;
 }
 
 function showToast(message, duration = 2500) {
@@ -592,5 +628,4 @@ function showToast(message, duration = 2500) {
   setTimeout(() => toast.classList.remove("show"), duration);
 }
 
-// 起動
 window.addEventListener("DOMContentLoaded", init);
