@@ -1,6 +1,6 @@
 const state = {
 
-  selectedCharacter: null,
+  selectedCharacter: "woosan",
 
   player: null,
 
@@ -14,260 +14,136 @@ const state = {
 
   treasureScore: 0,
 
-  timer: null,
+  gameEnded: false,
 
-  gameEnded: false
+  timer: null
 
 };
 
 /* ========================= */
-/* 画面 */
+/* 画面管理 */
 /* ========================= */
 
 const screens = {
 
-  menu:
-    document.getElementById(
-      "menu-screen"
-    ),
+  menu: document.getElementById("menu-screen"),
 
-  character:
-    document.getElementById(
-      "character-screen"
-    ),
+  character: document.getElementById("character-screen"),
 
-  game:
-    document.getElementById(
-      "game-screen"
-    ),
+  game: document.getElementById("game-screen"),
 
-  result:
-    document.getElementById(
-      "result-screen"
-    ),
+  result: document.getElementById("result-screen"),
 
-  help:
-    document.getElementById(
-      "help-screen"
-    ),
+  help: document.getElementById("help-screen"),
 
-  enemyBook:
-    document.getElementById(
-      "enemy-book-screen"
-    ),
+  enemy: document.getElementById("enemy-book-screen"),
 
-  treasureBook:
-    document.getElementById(
-      "treasure-book-screen"
-    )
+  treasure: document.getElementById("treasure-book-screen")
 
 };
 
-function switchScreen(screen){
+function switchScreen(target) {
 
-  Object.values(screens)
-    .forEach(s => {
+  Object.values(screens).forEach(s => s.classList.remove("active"));
 
-      s.classList.remove(
-        "active"
-      );
-
-    });
-
-  screen.classList.add(
-    "active"
-  );
+  target.classList.add("active");
 
 }
+
+/* ========================= */
+/* 初期化 */
+/* ========================= */
+
+window.onload = () => {
+
+  state.selectedCharacter = "woosan";
+
+};
 
 /* ========================= */
 /* メニュー */
 /* ========================= */
 
-document
-  .getElementById(
-    "start-button"
-  )
-  .addEventListener(
-    "click",
-    () => {
+document.getElementById("start-button").onclick = () => {
+  switchScreen(screens.character);
+};
 
-      switchScreen(
-        screens.character
-      );
+document.getElementById("help-button").onclick = () => {
+  switchScreen(screens.help);
+};
 
-    }
-  );
+document.getElementById("enemy-book-button").onclick = () => {
+  openEnemyBook();
+};
 
-document
-  .getElementById(
-    "help-button"
-  )
-  .addEventListener(
-    "click",
-    () => {
-
-      switchScreen(
-        screens.help
-      );
-
-    }
-  );
-
-document
-  .getElementById(
-    "enemy-book-button"
-  )
-  .addEventListener(
-    "click",
-    openEnemyBook
-  );
-
-document
-  .getElementById(
-    "treasure-book-button"
-  )
-  .addEventListener(
-    "click",
-    openTreasureBook
-  );
-
-document
-  .querySelectorAll(
-    ".back-button"
-  )
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        switchScreen(
-          screens.menu
-        );
-
-      }
-    );
-
-  });
+document.getElementById("treasure-book-button").onclick = () => {
+  openTreasureBook();
+};
 
 /* ========================= */
-/* キャラクター選択 */
+/* キャラ選択 */
 /* ========================= */
 
-document
-  .querySelectorAll(
-    ".character-button"
-  )
-  .forEach(button => {
+document.querySelectorAll(".character-button").forEach(btn => {
 
-    button.addEventListener(
-      "click",
-      () => {
+  btn.onclick = () => {
 
-        const id =
-          button.dataset.character;
+    state.selectedCharacter = btn.dataset.character;
 
-        state.selectedCharacter =
-          id;
+    document.getElementById("confirm-character").disabled = false;
 
-        const c =
-          CHARACTERS[id];
+    const c = CHARACTERS[state.selectedCharacter];
 
-        document
-          .getElementById(
-            "character-image"
-          )
-          .src = c.image;
+    document.getElementById("character-image").src = c.image;
 
-        document
-          .getElementById(
-            "character-info"
-          )
-          .innerHTML = `
+    document.getElementById("character-info").innerHTML = `
+      <h3>${c.name}</h3>
+      <p>HP ${c.hp} / ATK ${c.atk} / DEF ${c.def} / CTR ${c.ctr}%</p>
+    `;
 
-            <h3>
-              ${c.name}
-            </h3>
+  };
 
-            <p>
-              HP:
-              ${c.hp}
-            </p>
+});
 
-            <p>
-              ATK:
-              ${c.atk}
-            </p>
+/* メインへ戻る */
+document.getElementById("back-menu-from-character").onclick = () => {
+  switchScreen(screens.menu);
+};
 
-            <p>
-              DEF:
-              ${c.def}
-            </p>
+/* 開始 */
+document.getElementById("confirm-character").onclick = () => {
 
-            <p>
-              CTR:
-              ${c.ctr}%
-            </p>
+  state.player = structuredClone(CHARACTERS[state.selectedCharacter]);
 
-          `;
+  startGame();
 
-        document
-          .getElementById(
-            "confirm-character"
-          )
-          .disabled = false;
+  switchScreen(screens.game);
 
-      }
-    );
-
-  });
-
-document
-  .getElementById(
-    "confirm-character"
-  )
-  .addEventListener(
-    "click",
-    startGame
-  );
-
-document
-  .getElementById(
-    "back-menu"
-  )
-  .addEventListener(
-    "click",
-    () => {
-
-      location.reload();
-
-    }
-  );
+};
 
 /* ========================= */
 /* ゲーム開始 */
 /* ========================= */
 
-function startGame(){
+function startGame() {
 
-  const base =
-    CHARACTERS[
-      state.selectedCharacter
-    ];
+  state.time = 180;
 
-  state.player =
-    structuredClone(base);
+  state.floor = 1;
 
-  switchScreen(
-    screens.game
-  );
+  state.kills = 0;
+
+  state.bossKills = 0;
+
+  state.treasureScore = 0;
+
+  state.gameEnded = false;
 
   updateUI();
 
   startTimer();
 
-  generateChoices();
+  nextEvent();
 
 }
 
@@ -275,240 +151,61 @@ function startGame(){
 /* タイマー */
 /* ========================= */
 
-function startTimer(){
+function startTimer() {
 
-  state.timer =
-    setInterval(() => {
+  clearInterval(state.timer);
 
-      if(state.gameEnded){
-        return;
-      }
+  state.timer = setInterval(() => {
 
-      state.time--;
+    if (state.gameEnded) return;
 
-      updateUI();
+    state.time--;
 
-      if(
-        state.time <= 0
-      ){
+    updateUI();
 
-        gameOver(
-          "時間切れ..."
-        );
+    if (state.time <= 0) {
+      gameOver();
+    }
 
-      }
-
-    },1000);
+  }, 1000);
 
 }
 
 /* ========================= */
-/* UI */
+/* UI更新 */
 /* ========================= */
 
-function updateUI(){
+function updateUI() {
 
-  document
-    .getElementById(
-      "time-display"
-    )
-    .textContent =
-      state.time;
+  document.getElementById("time-display").textContent = state.time;
 
-  document
-    .getElementById(
-      "floor-display"
-    )
-    .textContent =
-      state.floor;
+  document.getElementById("floor-display").textContent = state.floor;
 
-  document
-    .getElementById(
-      "hp-display"
-    )
-    .textContent =
-      state.player.hp;
+  document.getElementById("hp-display").textContent = state.player.hp;
 
-  document
-    .getElementById(
-      "atk-display"
-    )
-    .textContent =
-      state.player.atk;
+  document.getElementById("atk-display").textContent = state.player.atk;
 
-  document
-    .getElementById(
-      "def-display"
-    )
-    .textContent =
-      state.player.def;
+  document.getElementById("def-display").textContent = state.player.def;
 
-  document
-    .getElementById(
-      "ctr-display"
-    )
-    .textContent =
-      state.player.ctr;
+  document.getElementById("ctr-display").textContent = state.player.ctr;
 
-  updateHpBar();
+  const ratio = state.player.hp / CHARACTERS[state.selectedCharacter].hp;
 
-}
-
-function updateHpBar(){
-
-  const maxHp =
-    CHARACTERS[
-      state.selectedCharacter
-    ].hp;
-
-  const ratio =
-    Math.max(
-      0,
-      state.player.hp / maxHp
-    );
-
-  document
-    .getElementById(
-      "hp-fill"
-    )
-    .style.width =
-      `${ratio * 100}%`;
+  document.getElementById("hp-fill").style.width = `${Math.max(0, ratio * 100)}%`;
 
 }
 
 /* ========================= */
-/* イベント */
+/* イベント選択 */
 /* ========================= */
 
-function weightedEvent(){
+function nextEvent() {
 
-  const weights =
-    state.player.weights;
+  const pool = ["battle", "treasure", "vortex", "rest", "accel"];
 
-  const pool = [];
+  const event = pool[Math.floor(Math.random() * pool.length)];
 
-  Object.entries(weights)
-    .forEach(([key, value]) => {
-
-      for(
-        let i = 0;
-        i < value;
-        i++
-      ){
-
-        pool.push(key);
-
-      }
-
-    });
-
-  return pool[
-    Math.floor(
-      Math.random()
-      * pool.length
-    )
-  ];
-
-}
-
-function generateChoices(){
-
-  let e1 =
-    weightedEvent();
-
-  let e2 =
-    weightedEvent();
-
-  while(e1 === e2){
-
-    e2 =
-      weightedEvent();
-
-  }
-
-  setupChoice(
-    "choice-1",
-    e1
-  );
-
-  setupChoice(
-    "choice-2",
-    e2
-  );
-
-}
-
-function setupChoice(id,type){
-
-  const button =
-    document.getElementById(id);
-
-  button.textContent =
-    getEventName(type);
-
-  button.onclick =
-    async () => {
-
-      disableChoices();
-
-      await executeEvent(type);
-
-    };
-
-}
-
-function disableChoices(){
-
-  document
-    .getElementById(
-      "choice-1"
-    )
-    .disabled = true;
-
-  document
-    .getElementById(
-      "choice-2"
-    )
-    .disabled = true;
-
-}
-
-function enableChoices(){
-
-  document
-    .getElementById(
-      "choice-1"
-    )
-    .disabled = false;
-
-  document
-    .getElementById(
-      "choice-2"
-    )
-    .disabled = false;
-
-}
-
-function getEventName(type){
-
-  switch(type){
-
-    case "battle":
-      return "戦闘";
-
-    case "treasure":
-      return "お宝探し";
-
-    case "vortex":
-      return "時空の渦";
-
-    case "rest":
-      return "休息";
-
-    case "acceleration":
-      return "時の加速";
-
-  }
+  executeEvent(event);
 
 }
 
@@ -516,215 +213,60 @@ function getEventName(type){
 /* イベント実行 */
 /* ========================= */
 
-async function executeEvent(type){
+async function executeEvent(type) {
 
-  if(state.gameEnded){
-    return;
-  }
+  if (state.gameEnded) return;
 
-  if(
-    state.floor % 10 === 0
-  ){
+  switch (type) {
 
-    await bossBattle();
-
-  } else {
-
-    switch(type){
-
-      case "battle":
-        await battleEvent();
-        break;
-
-      case "treasure":
-        await treasureEvent();
-        break;
-
-      case "vortex":
-        await vortexEvent();
-        break;
-
-      case "rest":
-        await restEvent();
-        break;
-
-      case "acceleration":
-        await accelerationEvent();
-        break;
-
-    }
-
-  }
-
-  if(
-    !state.gameEnded
-  ){
-
-    state.floor++;
-
-    updateUI();
-
-    generateChoices();
-
-    enableChoices();
-
-  }
-
-}
-
-/* ========================= */
-/* お宝イベント */
-/* ========================= */
-
-async function treasureEvent(){
-
-  clearLog();
-
-  if(
-    state.selectedCharacter !== "mongrin"
-    &&
-    Math.random() < 0.1
-  ){
-
-    await addLog("罠が発動した！");
-    await wait(600);
-
-    if(Math.random() < 0.5){
-
-      const damage = 15;
-
-      state.player.hp -= damage;
-
-      if(state.player.hp < 0){
-        state.player.hp = 0;
-      }
-
-      updateUI();
-
-      await addLog(`HPが${damage}減少！`);
-
-      if(state.player.hp <= 0){
-        await addLog("力尽きた...");
-        gameOver("GAME OVER");
-      }
-
-      return;
-
-    } else {
-
-      await addLog("強敵が出現！");
-      await wait(600);
-
+    case "battle":
       await battleEvent();
+      break;
 
-      return;
+    case "treasure":
+      await treasureEvent();
+      break;
 
-    }
+    case "vortex":
+      await vortexEvent();
+      break;
+
+    case "rest":
+      await restEvent();
+      break;
+
+    case "accel":
+      await accelerationEvent();
+      break;
 
   }
 
-  const treasure =
-    TREASURES[
-      Math.floor(Math.random() * TREASURES.length)
-    ];
-
-  state.treasureScore += treasure.value;
-
-  await addLog(`${treasure.name}を発見！`);
-  await wait(600);
-  await addLog(`+${treasure.value} SCORE`);
-
-}
-
-/* ========================= */
-/* 時空の渦 */
-/* ========================= */
-
-async function vortexEvent(){
-
-  clearLog();
-
-  let change =
-    Math.floor(Math.random() * 121) - 60;
-
-  if(
-    state.selectedCharacter === "fukkurou"
-    && change < 0
-  ){
-    change *= -1;
-  }
-
-  state.time += change;
-
-  if(state.time < 1){
-    state.time = 1;
-  }
+  state.floor++;
 
   updateUI();
 
-  await addLog("時空が歪んだ！");
-  await wait(600);
-  await addLog(`時間変動 ${change > 0 ? "+" : ""}${change}秒`);
+  nextEvent();
 
 }
 
 /* ========================= */
-/* 休息 */
+/* 戦闘 */
 /* ========================= */
 
-async function restEvent(){
+async function battleEvent() {
 
-  clearLog();
-
-  state.time -= 30;
-
-  const maxHp =
-    CHARACTERS[state.selectedCharacter].hp;
-
-  state.player.hp = maxHp;
-
-  updateUI();
-
-  await addLog("休息した");
-  await wait(600);
-  await addLog("HP全回復！");
-
-}
-
-/* ========================= */
-/* 時の加速 */
-/* ========================= */
-
-async function accelerationEvent(){
-
-  clearLog();
-
-  state.time -= 30;
-
-  state.floor += 3;
-
-  updateUI();
-
-  await addLog("時が加速した！");
-  await wait(600);
-  await addLog("3階層進んだ！");
-
-}
-
-/* ========================= */
-/* 戦闘イベント */
-/* ========================= */
-
-async function battleEvent(){
-
-  const base =
-    ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+  const base = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
 
   const enemy = {
+
     name: base.name,
-    hp: base.hp + state.floor * 3,
+
+    hp: base.hp + state.floor * 2,
+
     atk: base.atk + Math.floor(state.floor / 3),
-    def: base.def + Math.floor(state.floor / 6)
+
+    def: base.def
+
   };
 
   await autoBattle(enemy, false);
@@ -732,19 +274,23 @@ async function battleEvent(){
 }
 
 /* ========================= */
-/* ボス戦 */
+/* ボス戦（10階層） */
 /* ========================= */
 
-async function bossBattle(){
+async function bossBattle() {
 
-  const base =
-    BOSSES[Math.floor(Math.random() * BOSSES.length)];
+  const base = BOSSES[Math.floor(Math.random() * BOSSES.length)];
 
   const enemy = {
+
     name: base.name,
-    hp: base.hp + state.floor * 8,
+
+    hp: base.hp + state.floor * 5,
+
     atk: base.atk + Math.floor(state.floor / 2),
-    def: base.def + Math.floor(state.floor / 5)
+
+    def: base.def
+
   };
 
   await autoBattle(enemy, true);
@@ -755,48 +301,29 @@ async function bossBattle(){
 /* 自動戦闘 */
 /* ========================= */
 
-async function autoBattle(enemy, isBoss){
+async function autoBattle(enemy, isBoss) {
 
-  clearLog();
+  while (enemy.hp > 0 && state.player.hp > 0) {
 
-  await addLog(isBoss ? `ボス ${enemy.name} 出現！` : `${enemy.name} 出現！`);
-
-  while(enemy.hp > 0 && state.player.hp > 0){
-
-    let dmg = Math.max(1, state.player.atk - enemy.def);
-
-    if(Math.random() < state.player.ctr / 100){
-      dmg *= 2;
-      await addLog("クリティカル！");
-    }
+    const dmg = Math.max(1, state.player.atk - enemy.def);
 
     enemy.hp -= dmg;
-    await addLog(`${enemy.name}に${dmg}ダメージ`);
-    updateUI();
-    await wait(500);
 
-    if(enemy.hp <= 0){
-      await addLog(`${enemy.name}撃破！`);
+    if (enemy.hp <= 0) {
 
-      if(isBoss) state.bossKills++;
+      if (isBoss) state.bossKills++;
       else state.kills++;
 
       return;
+
     }
 
-    let edmg = Math.max(1, enemy.atk - state.player.def);
+    const edmg = Math.max(1, enemy.atk - state.player.def);
 
     state.player.hp -= edmg;
 
-    await addLog(`${edmg}ダメージを受けた`);
-    updateUI();
-    await wait(500);
-
-    if(state.player.hp <= 0){
-      state.player.hp = 0;
-      updateUI();
-      await addLog("力尽きた...");
-      gameOver("GAME OVER");
+    if (state.player.hp <= 0) {
+      gameOver();
       return;
     }
 
@@ -805,36 +332,62 @@ async function autoBattle(enemy, isBoss){
 }
 
 /* ========================= */
-/* ログ */
+/* お宝 */
 /* ========================= */
 
-function clearLog(){
-  document.getElementById("event-text").innerHTML = "";
+async function treasureEvent() {
+
+  state.time -= 10;
+
+  const t = TREASURES[Math.floor(Math.random() * TREASURES.length)];
+
+  state.treasureScore += t.value;
+
 }
 
-async function addLog(text){
-  const log = document.getElementById("event-text");
-  log.innerHTML += `<p>${text}</p>`;
-  log.scrollTop = log.scrollHeight;
+/* ========================= */
+/* 時空 */
+/* ========================= */
+
+async function vortexEvent() {
+
+  state.time += Math.floor(Math.random() * 121) - 60;
+
 }
 
-function wait(ms){
-  return new Promise(res => setTimeout(res, ms));
+/* ========================= */
+/* 休息 */
+/* ========================= */
+
+async function restEvent() {
+
+  state.time -= 15;
+
+  state.player.hp = CHARACTERS[state.selectedCharacter].hp;
+
+}
+
+/* ========================= */
+/* 加速 */
+/* ========================= */
+
+async function accelerationEvent() {
+
+  state.time -= 20;
+
+  state.floor += 3;
+
 }
 
 /* ========================= */
 /* GAME OVER */
 /* ========================= */
 
-function gameOver(msg){
+function gameOver() {
 
   state.gameEnded = true;
 
   clearInterval(state.timer);
-
-  disableChoices();
-
-  document.getElementById("event-text").innerHTML += `<h3>${msg}</h3>`;
 
   document.getElementById("result-button").style.display = "block";
 
@@ -844,9 +397,7 @@ function gameOver(msg){
 /* リザルト */
 /* ========================= */
 
-document.getElementById("result-button").addEventListener("click", showResult);
-
-function showResult(){
+document.getElementById("result-button").onclick = () => {
 
   const score =
     state.floor * 1000 +
@@ -855,58 +406,52 @@ function showResult(){
     state.treasureScore;
 
   document.getElementById("result-info").innerHTML = `
+
     <p>階層: ${state.floor}</p>
     <p>撃破: ${state.kills}</p>
     <p>ボス: ${state.bossKills}</p>
     <p>お宝: ${state.treasureScore}</p>
+
     <hr>
-    <h3>SCORE: ${score}</h3>
+
+    <h3>総合スコア: ${score}</h3>
+
   `;
 
   switchScreen(screens.result);
 
-}
+};
 
 /* ========================= */
 /* 図鑑 */
 /* ========================= */
 
-function openEnemyBook(){
+function openEnemyBook() {
 
-  switchScreen(screens.enemyBook);
+  switchScreen(screens.enemy);
 
-  const area =
-    document.getElementById("enemy-book-content");
+  document.getElementById("enemy-book-content").innerHTML =
 
-  let html = "<h3>通常敵</h3>";
-
-  ENEMIES.forEach(e => {
-    html += `<div class="enemy-box"><b>${e.name}</b><p>HP:${e.hp}</p><p>ATK:${e.atk}</p><p>DEF:${e.def}</p></div>`;
-  });
-
-  html += "<h3>ボス</h3>";
-
-  BOSSES.forEach(e => {
-    html += `<div class="enemy-box"><b>${e.name}</b><p>HP:${e.hp}</p><p>ATK:${e.atk}</p><p>DEF:${e.def}</p></div>`;
-  });
-
-  area.innerHTML = html;
+    ENEMIES.map(e =>
+      `<div class="enemy-box">
+        <span>${e.name}</span>
+        <span>HP:${e.hp} ATK:${e.atk} DEF:${e.def}</span>
+      </div>`
+    ).join("");
 
 }
 
-function openTreasureBook(){
+function openTreasureBook() {
 
-  switchScreen(screens.treasureBook);
+  switchScreen(screens.treasure);
 
-  const area =
-    document.getElementById("treasure-book-content");
+  document.getElementById("treasure-book-content").innerHTML =
 
-  let html = "";
-
-  TREASURES.forEach(t => {
-    html += `<div class="treasure-box"><b>${t.name}</b><p>VALUE:${t.value}</p></div>`;
-  });
-
-  area.innerHTML = html;
+    TREASURES.map(t =>
+      `<div class="treasure-box">
+        <span>${t.name}</span>
+        <span>${t.value}</span>
+      </div>`
+    ).join("");
 
 }
