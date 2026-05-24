@@ -1,5 +1,5 @@
 // ============================================================
-// data.js - キャラクター・敵・宝・イベントデータ管理（修正版）
+// data.js - キャラクター・敵・宝・イベントデータ管理
 // ============================================================
 
 // ============================================================
@@ -15,15 +15,20 @@ const CHARACTERS = {
     atk: 12,
     def: 5,
     ctr: 15,
-    description: "素早さが自慢の子ウサギ。戦闘力は低いが、加速イベントを引きやすい。",
+    description: "素早さが自慢の子ウサギ。戦闘力は低いが、時の加速を引きやすい。",
+    // 基本重み10、得意行動は12（約20%増）
     eventWeights: {
-      battle: 15,
-      treasure: 15,
-      vortex: 15,
-      rest: 15,
-      acceleration: 25,
-      boss: 15,
+      battle:       10,
+      treasure:     10,
+      vortex:       10,
+      rest:         10,
+      acceleration: 12,
+      boss:         10,
     },
+    skillName:  "おさがりの懐中時計",
+    skillDesc:  "選択肢を引き直す（リロール）。1プレイ3回まで。",
+    skillEmoji: "🕰️",
+    skillMax:   3,
   },
   gorillin: {
     id: "gorillin",
@@ -34,15 +39,19 @@ const CHARACTERS = {
     atk: 25,
     def: 15,
     ctr: 8,
-    description: "圧倒的な戦闘力と耐久力を誇る子ゴリラ。全イベントを均等に引く。",
+    description: "圧倒的な戦闘力と耐久力を誇る子ゴリラ。戦闘・ボス戦を引きやすい。",
     eventWeights: {
-      battle: 17,
-      treasure: 17,
-      vortex: 17,
-      rest: 17,
-      acceleration: 17,
-      boss: 15,
+      battle:       12,
+      treasure:     10,
+      vortex:       10,
+      rest:         10,
+      acceleration: 10,
+      boss:         12,
     },
+    skillName:  "大好物のバナナ",
+    skillDesc:  "HPを全回復する。1プレイ3回まで。",
+    skillEmoji: "🍌",
+    skillMax:   3,
   },
   fukkurou: {
     id: "fukkurou",
@@ -53,16 +62,20 @@ const CHARACTERS = {
     atk: 10,
     def: 4,
     ctr: 12,
-    description: "時空を操る子フクロウ。時空の渦イベントを引きやすく、必ず時間が増える。",
+    description: "時空を操る子フクロウ。時空の渦を引きやすく、渦では必ず時間が増える。",
     eventWeights: {
-      battle: 12,
-      treasure: 12,
-      vortex: 30,
-      rest: 13,
-      acceleration: 13,
-      boss: 15,
+      battle:       10,
+      treasure:     10,
+      vortex:       12,
+      rest:         10,
+      acceleration: 10,
+      boss:         10,
     },
     vortexAlwaysPositive: true,
+    skillName:  "未来視のモノクル",
+    skillDesc:  "時空イベントを自分で選んで発動する。1プレイ1回まで。",
+    skillEmoji: "🔭",
+    skillMax:   1,
   },
   mongrin: {
     id: "mongrin",
@@ -73,59 +86,63 @@ const CHARACTERS = {
     atk: 18,
     def: 10,
     ctr: 10,
-    description: "宝探しの達人モグラ親父。お宝イベントを引きやすく、罠が発生しない。",
+    description: "宝探しの達人モグラ親父。お宝探しを引きやすく、罠が発生しない。",
     eventWeights: {
-      battle: 12,
-      treasure: 30,
-      vortex: 13,
-      rest: 13,
-      acceleration: 12,
-      boss: 15,
+      battle:       10,
+      treasure:     12,
+      vortex:       10,
+      rest:         10,
+      acceleration: 10,
+      boss:         10,
     },
     noTreasureTrap: true,
+    skillName:  "安売セールで買ったスコップ",
+    skillDesc:  "選択肢を全てお宝探しに変更する。1プレイ3回まで。",
+    skillEmoji: "⛏️",
+    skillMax:   3,
   },
 };
 
 // ============================================================
-// 通常敵データ（20種類）約2/3に弱体化
+// 通常敵データ（20種類）現在の半分のステータス
 // ============================================================
 const ENEMIES = [
-  { id: "e01", name: "時計ネコ",      hp: 27,  atk: 7,  def: 2,  ctr: 5  },
-  { id: "e02", name: "砂時計キツネ",  hp: 37,  atk: 9,  def: 3,  ctr: 8  },
-  { id: "e03", name: "分針イヌ",      hp: 33,  atk: 8,  def: 3,  ctr: 6  },
-  { id: "e04", name: "秒針トカゲ",    hp: 23,  atk: 10, def: 1,  ctr: 10 },
-  { id: "e05", name: "時空クマ",      hp: 53,  atk: 11, def: 5,  ctr: 7  },
-  { id: "e06", name: "永遠ヘビ",      hp: 40,  atk: 9,  def: 4,  ctr: 9  },
-  { id: "e07", name: "瞬間ネズミ",    hp: 20,  atk: 12, def: 1,  ctr: 15 },
-  { id: "e08", name: "過去ペンギン",  hp: 43,  atk: 7,  def: 6,  ctr: 5  },
-  { id: "e09", name: "未来タヌキ",    hp: 47,  atk: 11, def: 5,  ctr: 8  },
-  { id: "e10", name: "逆行アリクイ",  hp: 30,  atk: 9,  def: 3,  ctr: 12 },
-  { id: "e11", name: "時歪みシカ",    hp: 60,  atk: 13, def: 7,  ctr: 6  },
-  { id: "e12", name: "刹那ビーバー",  hp: 27,  atk: 13, def: 2,  ctr: 14 },
-  { id: "e13", name: "残影ヒョウ",    hp: 50,  atk: 15, def: 5,  ctr: 10 },
-  { id: "e14", name: "時縛りカメ",    hp: 67,  atk: 7,  def: 10, ctr: 4  },
-  { id: "e15", name: "黄昏オオカミ",  hp: 57,  atk: 14, def: 6,  ctr: 11 },
-  { id: "e16", name: "夜明けバク",    hp: 40,  atk: 10, def: 4,  ctr: 8  },
-  { id: "e17", name: "時喰いカバ",    hp: 73,  atk: 12, def: 8,  ctr: 5  },
-  { id: "e18", name: "千年ワニ",      hp: 63,  atk: 13, def: 7,  ctr: 7  },
-  { id: "e19", name: "瞬獄コウモリ",  hp: 33,  atk: 16, def: 3,  ctr: 16 },
-  { id: "e20", name: "迷宮ライオン",  hp: 70,  atk: 15, def: 9,  ctr: 9  },
+  { id: "e01", name: "時計ネコ",      hp: 14,  atk: 4,  def: 1,  ctr: 5  },
+  { id: "e02", name: "砂時計キツネ",  hp: 19,  atk: 5,  def: 2,  ctr: 8  },
+  { id: "e03", name: "分針イヌ",      hp: 17,  atk: 4,  def: 2,  ctr: 6  },
+  { id: "e04", name: "秒針トカゲ",    hp: 12,  atk: 5,  def: 1,  ctr: 10 },
+  { id: "e05", name: "時空クマ",      hp: 27,  atk: 6,  def: 3,  ctr: 7  },
+  { id: "e06", name: "永遠ヘビ",      hp: 20,  atk: 5,  def: 2,  ctr: 9  },
+  { id: "e07", name: "瞬間ネズミ",    hp: 10,  atk: 6,  def: 1,  ctr: 15 },
+  { id: "e08", name: "過去ペンギン",  hp: 22,  atk: 4,  def: 3,  ctr: 5  },
+  { id: "e09", name: "未来タヌキ",    hp: 24,  atk: 6,  def: 3,  ctr: 8  },
+  { id: "e10", name: "逆行アリクイ",  hp: 15,  atk: 5,  def: 2,  ctr: 12 },
+  { id: "e11", name: "時歪みシカ",    hp: 30,  atk: 7,  def: 4,  ctr: 6  },
+  { id: "e12", name: "刹那ビーバー",  hp: 14,  atk: 7,  def: 1,  ctr: 14 },
+  { id: "e13", name: "残影ヒョウ",    hp: 25,  atk: 8,  def: 3,  ctr: 10 },
+  { id: "e14", name: "時縛りカメ",    hp: 34,  atk: 4,  def: 5,  ctr: 4  },
+  { id: "e15", name: "黄昏オオカミ",  hp: 29,  atk: 7,  def: 3,  ctr: 11 },
+  { id: "e16", name: "夜明けバク",    hp: 20,  atk: 5,  def: 2,  ctr: 8  },
+  { id: "e17", name: "時喰いカバ",    hp: 37,  atk: 6,  def: 4,  ctr: 5  },
+  { id: "e18", name: "千年ワニ",      hp: 32,  atk: 7,  def: 4,  ctr: 7  },
+  { id: "e19", name: "瞬獄コウモリ",  hp: 17,  atk: 8,  def: 2,  ctr: 16 },
+  { id: "e20", name: "迷宮ライオン",  hp: 35,  atk: 8,  def: 5,  ctr: 9  },
 ];
 
 // ============================================================
-// ボスデータ（10種類）約2/3に弱体化
+// ボスデータ（10種類）現在の半分のステータス
 // ============================================================
 const BOSSES = [
-  { id: "b01", name: "時空王カイオウ",      hp: 133, atk: 19, def: 10, ctr: 10 },
-  { id: "b02", name: "永劫龍ジカーン",      hp: 167, atk: 21, def: 12, ctr: 12 },
-  { id: "b03", name: "歴史喰いマンモス",    hp: 200, atk: 17, def: 15, ctr: 8  },
-  { id: "b04", name: "刹那神ファルコーン",  hp: 120, atk: 23, def: 8,  ctr: 18 },
-  { id: "b05", name: "時縛り大公クロノス",  hp: 180, atk: 20, def: 13, ctr: 10 },
-  { id: "b06", name: "亜空間皇テンポラ",    hp: 147, atk: 22, def: 11, ctr: 14 },
-  { id: "b07", name: "逆行獣レグレス",      hp: 160, atk: 18, def: 13, ctr: 11 },
-  { id: "b08", name: "無限蛇エターナル",    hp: 233, atk: 15, def: 17, ctr: 7  },
-  { id: "b09", name: "時流王バスト",        hp: 127, atk: 25, def: 9,  ctr: 20 },
-  { id: "b10", name: "時の覇者クロニクル",  hp: 267, atk: 23, def: 19, ctr: 15 },
+  { id: "b01", name: "時空王カイオウ",      hp: 67,  atk: 10, def: 5,  ctr: 10 },
+  { id: "b02", name: "永劫龍ジカーン",      hp: 84,  atk: 11, def: 6,  ctr: 12 },
+  { id: "b03", name: "歴史喰いマンモス",    hp: 100, atk: 9,  def: 8,  ctr: 8  },
+  { id: "b04", name: "刹那神ファルコーン",  hp: 60,  atk: 12, def: 4,  ctr: 18 },
+  { id: "b05", name: "時縛り大公クロノス",  hp: 90,  atk: 10, def: 7,  ctr: 10 },
+  { id: "b06", name: "亜空間皇テンポラ",    hp: 74,  atk: 11, def: 6,  ctr: 14 },
+  { id: "b07", name: "逆行獣レグレス",      hp: 80,  atk: 9,  def: 7,  ctr: 11 },
+  { id: "b08", name: "無限蛇エターナル",    hp: 117, atk: 8,  def: 9,  ctr: 7  },
+  { id: "b09", name: "時流王バスト",        hp: 64,  atk: 13, def: 5,  ctr: 20 },
+  { id: "b10", name: "時の覇者クロニクル",  hp: 134, atk: 12, def: 10, ctr: 15 },
 ];
 
 // ============================================================
@@ -135,20 +152,20 @@ const VORTEX_BOSSES = {
   guardian: {
     id: "vb01",
     name: "時の番人",
-    hp: 400,
-    atk: 38,
-    def: 24,
+    hp: 200,
+    atk: 19,
+    def: 12,
     ctr: 14,
-    currentHp: 400,
+    currentHp: 200,
   },
   ruler: {
     id: "vb02",
     name: "時空の支配者",
-    hp: 800,
-    atk: 72,
-    def: 45,
+    hp: 400,
+    atk: 36,
+    def: 23,
     ctr: 20,
-    currentHp: 800,
+    currentHp: 400,
   },
 };
 
@@ -183,13 +200,13 @@ const EVENT_TYPES = {
   battle:       { id: "battle",       name: "⚔️ 戦闘",      description: "敵と遭遇した！" },
   treasure:     { id: "treasure",     name: "💎 お宝探し",  description: "宝の予感がする…（時間-10秒）" },
   vortex:       { id: "vortex",       name: "🌀 時空の渦",  description: "時空の歪みを感じる…" },
-  rest:         { id: "rest",         name: "🏕 休息",      description: "安全な場所を発見した。（時間-10秒）" },
+  rest:         { id: "rest",         name: "🏕️ 休息",      description: "安全な場所を発見した。（時間-10秒）" },
   acceleration: { id: "acceleration", name: "⚡ 時の加速",  description: "時間が歪み、前方へ飛ばされる！（時間-20秒）" },
   boss:         { id: "boss",         name: "💀 ボス戦",    description: "強大な気配を感じる…！" },
 };
 
 // ============================================================
-// 時空イベント定義（階層移動時5%で発生）
+// 時空イベント定義
 // ============================================================
 const SPACETIME_EVENTS = [
   {
@@ -247,10 +264,10 @@ function getRandomTreasure() {
   return randomPick(pool);
 }
 
-/** フロアに応じてスケールした通常敵を取得 */
+/** フロアに応じてスケールした通常敵を取得（0.5%増/階層） */
 function getScaledEnemy(floor) {
   const base  = randomPick(ENEMIES);
-  const scale = 1 + (floor - 1) * 0.08;
+  const scale = 1 + (floor - 1) * 0.005;
   return {
     ...base,
     hp:        Math.round(base.hp  * scale),
@@ -274,8 +291,8 @@ function getVortexBoss(type) {
 
 /** イベントを2つランダム選出（重み付き、重複なし） */
 function pickTwoEvents(character) {
-  const weights   = { ...character.eventWeights };
-  const first     = weightedRandom(weights);
+  const weights        = { ...character.eventWeights };
+  const first          = weightedRandom(weights);
   const weightsWithout = { ...weights };
   delete weightsWithout[first];
   const second = weightedRandom(weightsWithout);
