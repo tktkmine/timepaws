@@ -14,7 +14,7 @@
   <!-- ========== メインメニュー ========== -->
   <div id="screen-menu" class="screen active">
     <div class="menu-bg"></div>
-    <button class="help-btn" onclick="openHelp()">？</button>
+    <button class="help-btn" onclick="openHelp()">ヘルプ</button>
     <div class="menu-content">
       <img src="img/logo.png" alt="時空ダンジョン" class="logo" />
       <div class="highscore-display">
@@ -34,8 +34,6 @@
     <div class="screen-header">
       <h2 class="screen-title">キャラクター選択</h2>
     </div>
-
-    <!-- 横並び4体 -->
     <div class="char-grid">
       <div class="char-card" data-id="woosan" onclick="selectCharacter('woosan')">
         <img src="img/woosan.png" alt="ウーサン" class="char-img" />
@@ -58,10 +56,7 @@
         <div class="char-sub-label">モグラ親父</div>
       </div>
     </div>
-
-    <!-- キャラ詳細（選択後に展開） -->
     <div id="char-detail" class="char-detail"></div>
-
     <div class="select-actions">
       <button class="btn btn-secondary" onclick="showScreen('menu')">← 戻る</button>
       <button class="btn btn-primary" onclick="startGame()">冒険開始！</button>
@@ -70,9 +65,7 @@
 
   <!-- ========== ダンジョン（イベント選択） ========== -->
   <div id="screen-dungeon" class="screen">
-    <button class="help-btn" onclick="openHelp()">？</button>
-
-    <!-- ステータスバー -->
+    <button class="help-btn" onclick="openHelp()">ヘルプ</button>
     <div class="status-bar">
       <div class="status-left">
         <span id="player-name" class="status-char-name">―</span>
@@ -100,11 +93,7 @@
         <div id="spacetime-status" class="spacetime-badge">通常時空</div>
       </div>
     </div>
-
-    <!-- メッセージ -->
     <div id="dungeon-message" class="dungeon-message">ダンジョンへ足を踏み入れた…</div>
-
-    <!-- イベント選択 -->
     <div class="event-section">
       <p class="event-prompt">— イベントを選択 —</p>
       <div id="event-choices" class="event-choices"></div>
@@ -116,7 +105,6 @@
     <div class="battle-header">
       <h2 id="battle-title" class="battle-title">⚔️ BATTLE</h2>
     </div>
-
     <div class="combatant-block enemy-block">
       <div class="combatant-name-row">
         <span id="enemy-name" class="combatant-name enemy-name">―</span>
@@ -129,9 +117,7 @@
         <span id="enemy-hp-value" class="hp-text">―</span>
       </div>
     </div>
-
     <div class="vs-divider">VS</div>
-
     <div class="combatant-block player-block">
       <div class="combatant-name-row">
         <span id="battle-player-name" class="combatant-name player-name">―</span>
@@ -144,9 +130,7 @@
         <span id="battle-player-hp" class="hp-text">―</span>
       </div>
     </div>
-
     <div id="battle-log" class="battle-log"></div>
-
     <button id="battle-start-btn" class="btn btn-primary battle-btn">
       ⚔️ 戦闘開始！
     </button>
@@ -201,18 +185,15 @@
           <span id="score-total" class="score-val total-val">―</span>
         </div>
       </div>
-
       <div class="treasure-section">
         <h3 class="treasure-title">💎 獲得したお宝</h3>
         <ul id="treasure-list" class="treasure-list"></ul>
       </div>
-
       <div class="highscore-row">
         <span class="hs-label">🏆 BEST</span>
         <span id="score-highscore" class="hs-value">―</span>
         <span class="hs-unit">pt</span>
       </div>
-
       <button id="back-menu-btn" class="btn btn-primary btn-large">
         🏠 メインメニューへ
       </button>
@@ -231,8 +212,6 @@
   <!-- ========== ヘルプモーダル ========== -->
   <div id="help-modal" class="modal-overlay">
     <div class="modal-box modal-box-help">
-
-      <!-- タブ -->
       <div class="help-tabs">
         <button class="help-tab active" onclick="switchHelpTab('actions')">行動一覧</button>
         <button class="help-tab" onclick="switchHelpTab('enemies')">敵図鑑</button>
@@ -251,11 +230,11 @@
         </div>
         <div class="help-item">
           <div class="help-item-title">💎 お宝探し</div>
-          <div class="help-item-desc">宝を発見してスコア獲得。10%の確率で罠が発動し、50%でダメージ（最大HP×30%）、50%で強敵との戦闘が発生。モングリンは罠が発生しない。</div>
+          <div class="help-item-desc">時間を10秒消費して宝を探索。必ず宝を1つ発見しスコア獲得。10%の確率で罠が発動し、50%でダメージ（最大HP×30%）、50%で強敵との戦闘が発生。モングリンは罠が発生しない。</div>
         </div>
         <div class="help-item">
           <div class="help-item-title">🌀 時空の渦</div>
-          <div class="help-item-desc">制限時間が－60〜＋60秒ランダム変動。フックロウは必ず時間が増加する。</div>
+          <div class="help-item-desc">制限時間が－60〜＋60秒ランダム変動。フックロウは必ず時間が増加する。<br>また、稀に強力な存在が現れることがある。<br>・4%の確率で「時の番人」との戦闘が発生。<br>・1%の確率で「時空の支配者」との戦闘が発生。</div>
         </div>
         <div class="help-item">
           <div class="help-item-title">🏕️ 休息</div>
@@ -263,11 +242,29 @@
         </div>
         <div class="help-item">
           <div class="help-item-title">⚡ 時の加速</div>
-          <div class="help-item-desc">時間を20秒消費して3階層先へ進む。ウーサンは引きやすい。残り時間が20秒未満の場合は実行不可。</div>
+          <div class="help-item-desc">時間を20秒消費して5階層先へ進む。ウーサンは引きやすい。残り時間が20秒未満の場合は実行不可。</div>
         </div>
         <div class="help-item">
           <div class="help-item-title">✨ 時空イベント（自動）</div>
           <div class="help-item-desc">階層移動時に5%の確率で発生。「神速空間」は時間減少50%加速、「亜空間」は50%減速、「通常時空」で元に戻る。</div>
+        </div>
+        <div class="help-item">
+          <div class="help-item-title">📊 スコア計算</div>
+          <div class="help-item-desc">
+            到達フロア × 500pt<br>
+            敵撃破 × 500pt<br>
+            ボス撃破 × 2000pt<br>
+            お宝スコア（宝の価値そのまま）
+          </div>
+        </div>
+        <div class="help-item">
+          <div class="help-item-title">💎 お宝排出率</div>
+          <div class="help-item-desc">
+            低級（100pt）：40%<br>
+            中級（500pt）：30%<br>
+            高級（1000pt）：20%<br>
+            伝説（2500pt）：10%
+          </div>
         </div>
       </div>
 
@@ -292,6 +289,7 @@
           </table>
         </div>
         <p class="help-note">※通常敵のステータスは階層が上がるほど強化されます（階層×8%）</p>
+        <p class="help-note">🌀 は時空の渦専用の特殊ボスです</p>
       </div>
 
       <!-- お宝一覧 -->
