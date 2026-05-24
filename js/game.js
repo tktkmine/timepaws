@@ -54,6 +54,41 @@ function updateHighScoreDisplay() {
 }
 
 // ============================================================
+// タイマー（常時カウントダウン・止まらない）
+// ============================================================
+function startTimer() {
+  // 既存タイマーがあればそのまま継続（止めない）
+  if (GameState.timerInterval) return;
+  GameState.timerInterval = setInterval(() => {
+    GameState.timeLeft -= 0.1 * GameState.timeSpeedMultiplier;
+    if (GameState.timeLeft <= 0) {
+      GameState.timeLeft = 0;
+      updateTimerUI();
+      clearInterval(GameState.timerInterval);
+      GameState.timerInterval = null;
+      gameOver("時間切れ");
+    } else {
+      updateTimerUI();
+    }
+  }, 100);
+}
+
+function forceStopTimer() {
+  // ゲームオーバー時のみ使用
+  clearInterval(GameState.timerInterval);
+  GameState.timerInterval = null;
+}
+
+function updateTimerUI() {
+  const el = document.getElementById("timer-value");
+  if (!el) return;
+  const t = Math.max(0, GameState.timeLeft);
+  el.textContent = Math.ceil(t);
+  const wrap = document.getElementById("timer-wrap");
+  if (wrap) wrap.classList.toggle("danger", t <= 30);
+}
+
+// ============================================================
 // キャラクター選択
 // ============================================================
 function selectCharacter(id) {
@@ -62,7 +97,7 @@ function selectCharacter(id) {
   if (card) card.classList.add("selected");
   GameState.selectedCharId = id;
 
-  const chara = CHARACTERS[id];
+  const chara  = CHARACTERS[id];
   const detail = document.getElementById("char-detail");
   if (detail) {
     detail.innerHTML = `
@@ -100,59 +135,29 @@ function startGame() {
     return;
   }
   const chara = CHARACTERS[id];
-  GameState.character        = chara;
-  GameState.player           = {
+  GameState.character           = chara;
+  GameState.player              = {
     currentHp: chara.hp,
     maxHp:     chara.hp,
     atk:       chara.atk,
     def:       chara.def,
     ctr:       chara.ctr,
   };
-  GameState.floor              = 1;
-  GameState.timeLeft           = 180;
+  GameState.floor               = 1;
+  GameState.timeLeft            = 180;
   GameState.timeSpeedMultiplier = 1.0;
-  GameState.enemiesDefeated    = 0;
-  GameState.bossesDefeated     = 0;
-  GameState.treasures          = [];
-  GameState.reachedFloor       = 1;
-  GameState.spacetimeActive    = null;
-  GameState.battleLog          = [];
+  GameState.enemiesDefeated     = 0;
+  GameState.bossesDefeated      = 0;
+  GameState.treasures           = [];
+  GameState.reachedFloor        = 1;
+  GameState.spacetimeActive     = null;
+  GameState.battleLog           = [];
+  GameState.timerInterval       = null;
 
   showScreen("dungeon");
   updateDungeonUI();
   startTimer();
   generateEvents();
-}
-
-// ============================================================
-// タイマー
-// ============================================================
-function startTimer() {
-  clearInterval(GameState.timerInterval);
-  GameState.timerInterval = setInterval(() => {
-    GameState.timeLeft -= 0.1 * GameState.timeSpeedMultiplier;
-    if (GameState.timeLeft <= 0) {
-      GameState.timeLeft = 0;
-      updateTimerUI();
-      clearInterval(GameState.timerInterval);
-      gameOver("時間切れ");
-    } else {
-      updateTimerUI();
-    }
-  }, 100);
-}
-
-function stopTimer() {
-  clearInterval(GameState.timerInterval);
-}
-
-function updateTimerUI() {
-  const el = document.getElementById("timer-value");
-  if (!el) return;
-  const t = Math.max(0, GameState.timeLeft);
-  el.textContent = Math.ceil(t);
-  const wrap = document.getElementById("timer-wrap");
-  if (wrap) wrap.classList.toggle("danger", t <= 30);
 }
 
 // ============================================================
@@ -164,11 +169,12 @@ function updateDungeonUI() {
 
   const p = GameState.player;
   setText("hp-value", `${p.currentHp} / ${p.maxHp}`);
+
   const hpBar = document.getElementById("hp-bar");
   if (hpBar) {
     const pct = (p.currentHp / p.maxHp) * 100;
     hpBar.style.width = `${pct}%`;
-    hpBar.className = "hp-bar-fill";
+    hpBar.className   = "hp-bar-fill";
     if (pct <= 25)      hpBar.classList.add("critical");
     else if (pct <= 50) hpBar.classList.add("low");
   }
@@ -189,7 +195,7 @@ function updateDungeonUI() {
 // イベント生成・選択
 // ============================================================
 function generateEvents() {
-  const events    = pickTwoEvents(GameState.character);
+  const events            = pickTwoEvents(GameState.character);
   GameState.currentEvents = events;
 
   const container = document.getElementById("event-choices");
@@ -197,9 +203,9 @@ function generateEvents() {
   container.innerHTML = "";
 
   events.forEach((ev) => {
-    const btn = document.createElement("button");
-    btn.className = "event-btn";
-    btn.innerHTML = `
+    const btn       = document.createElement("button");
+    btn.className   = "event-btn";
+    btn.innerHTML   = `
       <span class="event-name">${ev.name}</span>
       <span class="event-desc">${ev.description}</span>
     `;
@@ -213,27 +219,35 @@ function generateEvents() {
 function chooseEvent(eventId) {
   document.querySelectorAll(".event-btn").forEach((b) => (b.disabled = true));
   switch (eventId) {
-    case "battle":       startBattle(false); break;
-    case "boss":         startBattle(true);  break;
-    case "treasure":     doTreasure();       break;
-    case "vortex":       doVortex();         break;
-    case "rest":         doRest();           break;
-    case "acceleration": doAcceleration();   break;
+    case "battle":       startBattle(false, null); break;
+    case "boss":         startBattle(true,  null); break;
+    case "treasure":     doTreasure();             break;
+    case "vortex":       doVortex();               break;
+    case "rest":         doRest();                 break;
+    case "acceleration": doAcceleration();         break;
   }
 }
 
 // ============================================================
-// 戦闘処理
+// 戦闘処理（タイマー止めない）
 // ============================================================
-function startBattle(isBoss) {
-  stopTimer();
-  const enemy        = isBoss ? getRandomBoss() : getScaledEnemy(GameState.floor);
-  GameState.enemy    = enemy;
-  GameState.inBattle = true;
+function startBattle(isBoss, vortexBossType) {
+  // vortexBossType: null=通常 | "guardian" | "ruler"
+  let enemy;
+  if (vortexBossType) {
+    enemy = getVortexBoss(vortexBossType);
+  } else if (isBoss) {
+    enemy = getRandomBoss();
+  } else {
+    enemy = getScaledEnemy(GameState.floor);
+  }
+
+  GameState.enemy     = enemy;
+  GameState.inBattle  = true;
   GameState.battleLog = [];
 
   showScreen("battle");
-  updateBattleUI(isBoss);
+  updateBattleUI(isBoss || !!vortexBossType);
 
   const logEl = document.getElementById("battle-log");
   if (logEl) logEl.innerHTML = "";
@@ -242,7 +256,7 @@ function startBattle(isBoss) {
   if (startBtn) {
     startBtn.style.display = "block";
     startBtn.disabled      = false;
-    startBtn.onclick       = () => runAutoBattle(isBoss);
+    startBtn.onclick       = () => runAutoBattle(isBoss, vortexBossType);
   }
 }
 
@@ -254,20 +268,32 @@ function updateBattleUI(isBoss) {
   setText("enemy-hp-value", `${enemy.currentHp} / ${enemy.hp}`);
   updateBar("enemy-hp-bar", enemy.currentHp, enemy.hp);
 
-  setText("battle-title",      isBoss ? "💀 BOSS BATTLE" : "⚔️ BATTLE");
+  let title = "⚔️ BATTLE";
+  if (enemy.id === "vb01") title = "👁️ 時の番人";
+  else if (enemy.id === "vb02") title = "👑 時空の支配者";
+  else if (isBoss) title = "💀 BOSS BATTLE";
+  setText("battle-title", title);
+
   setText("battle-player-name", GameState.character.name);
-  setText("battle-player-hp",  `${player.currentHp} / ${player.maxHp}`);
+  setText("battle-player-hp",   `${player.currentHp} / ${player.maxHp}`);
   updateBar("battle-player-hp-bar", player.currentHp, player.maxHp);
 }
 
-async function runAutoBattle(isBoss) {
+async function runAutoBattle(isBoss, vortexBossType) {
   const startBtn = document.getElementById("battle-start-btn");
   if (startBtn) startBtn.style.display = "none";
 
-  const player = GameState.player;
-  const enemy  = GameState.enemy;
+  const player   = GameState.player;
+  const enemy    = GameState.enemy;
+  const isSpecial = !!vortexBossType;
 
   while (player.currentHp > 0 && enemy.currentHp > 0) {
+    // タイムアウト判定（戦闘中でも時間切れ検知）
+    if (GameState.timeLeft <= 0) {
+      gameOver("時間切れ");
+      return;
+    }
+
     // プレイヤー攻撃
     const playerCrit = chance(player.ctr);
     let playerDmg    = Math.max(1, player.atk - enemy.def);
@@ -278,7 +304,7 @@ async function runAutoBattle(isBoss) {
       `${GameState.character.name} の攻撃！${playerCrit ? "【クリティカル！】" : ""}` +
       ` ${enemy.name} に ${playerDmg} ダメージ！`
     );
-    updateBattleUI(isBoss);
+    updateBattleUI(isBoss || isSpecial);
     await sleep(600);
     if (enemy.currentHp <= 0) break;
 
@@ -292,7 +318,7 @@ async function runAutoBattle(isBoss) {
       `${enemy.name} の攻撃！${enemyCrit ? "【クリティカル！】" : ""}` +
       ` ${GameState.character.name} に ${enemyDmg} ダメージ！`
     );
-    updateBattleUI(isBoss);
+    updateBattleUI(isBoss || isSpecial);
     await sleep(600);
   }
 
@@ -302,8 +328,14 @@ async function runAutoBattle(isBoss) {
     gameOver("戦闘敗北");
   } else {
     addBattleLog(`${enemy.name} を倒した！`);
-    if (isBoss) GameState.bossesDefeated++;
-    else        GameState.enemiesDefeated++;
+    // 撃破カウント
+    if (vortexBossType) {
+      GameState.bossesDefeated++; // 時空ボスもボス撃破扱い
+    } else if (isBoss) {
+      GameState.bossesDefeated++;
+    } else {
+      GameState.enemiesDefeated++;
+    }
     await sleep(800);
     showScreen("dungeon");
     advanceFloor();
@@ -314,10 +346,13 @@ async function runAutoBattle(isBoss) {
 // イベント処理
 // ============================================================
 function doTreasure() {
-  const noTrap      = GameState.character.noTreasureTrap;
+  // 時間10秒消費
+  GameState.timeLeft = Math.max(1, GameState.timeLeft - 10);
+
+  const noTrap        = GameState.character.noTreasureTrap;
   const foundTreasure = getRandomTreasure();
   GameState.treasures.push(foundTreasure);
-  let message = `💎 ${foundTreasure.name}（${foundTreasure.value}pt）を発見！\n`;
+  let message = `💎 ${foundTreasure.name}（${foundTreasure.value}pt）を発見！\n⏱ 時間を10秒消費した。\n`;
 
   if (!noTrap && chance(10)) {
     message += `⚠️ 罠が発動！\n`;
@@ -333,7 +368,7 @@ function doTreasure() {
       message += `👹 強敵が現れた！`;
       showEventResult("お宝探し", message, () => {
         updateDungeonUI();
-        startBattle(false);
+        startBattle(false, null);
       });
     }
   } else {
@@ -345,6 +380,29 @@ function doTreasure() {
 }
 
 function doVortex() {
+  // 時空の渦：特殊戦闘抽選（4%番人、1%支配者）
+  const roll = Math.random() * 100;
+
+  if (roll < 1) {
+    // 時空の支配者（1%）
+    showEventResult(
+      "時空の渦",
+      "🌀 時空の渦に飲まれた！\n\n👑 時空の支配者が現れた！",
+      () => startBattle(false, "ruler")
+    );
+    return;
+  }
+  if (roll < 5) {
+    // 時の番人（4%）
+    showEventResult(
+      "時空の渦",
+      "🌀 時空の渦に飲まれた！\n\n👁️ 時の番人が立ちはだかった！",
+      () => startBattle(false, "guardian")
+    );
+    return;
+  }
+
+  // 通常の時空の渦（時間変動）
   let timeDelta;
   if (GameState.character.vortexAlwaysPositive) {
     timeDelta = randInt(1, 60);
@@ -353,7 +411,8 @@ function doVortex() {
   }
   GameState.timeLeft = Math.max(1, GameState.timeLeft + timeDelta);
   const sign = timeDelta >= 0 ? "+" : "";
-  const msg  = `🌀 時空の渦に飲まれた！\n時間が ${sign}${timeDelta} 秒変動した！\n残り時間: ${Math.ceil(GameState.timeLeft)} 秒`;
+  const msg  =
+    `🌀 時空の渦に飲まれた！\n時間が ${sign}${timeDelta} 秒変動した！\n残り時間: ${Math.ceil(GameState.timeLeft)} 秒`;
   showEventResult("時空の渦", msg, () => {
     updateDungeonUI();
     advanceFloor();
@@ -377,7 +436,7 @@ function doRest() {
 
 function doAcceleration() {
   const cost    = 20;
-  const advance = 3;
+  const advance = 5; // 3→5階層に変更
   if (GameState.timeLeft <= cost) {
     showEventResult("時の加速", "⏳ 時間が足りず加速できなかった…", () => advanceFloor());
     return;
@@ -398,20 +457,20 @@ function advanceFloor() {
 }
 
 function advanceFloorBy(n) {
-  GameState.floor += n;
+  GameState.floor       += n;
   GameState.reachedFloor = Math.max(GameState.reachedFloor, GameState.floor);
   checkSpacetimeEvent();
   showScreen("dungeon");
   updateDungeonUI();
-  startTimer();
+  // タイマーは止めないのでそのまま継続
   generateEvents();
 }
 
 function checkSpacetimeEvent() {
   if (chance(5)) {
-    const ev = randomPick(SPACETIME_EVENTS);
-    GameState.spacetimeActive      = ev;
-    GameState.timeSpeedMultiplier  = ev.speedMultiplier;
+    const ev                      = randomPick(SPACETIME_EVENTS);
+    GameState.spacetimeActive     = ev;
+    GameState.timeSpeedMultiplier = ev.speedMultiplier;
     showToast(`✨ 時空イベント発生！\n${ev.name}\n${ev.description}`, 3000);
   }
 }
@@ -420,8 +479,15 @@ function checkSpacetimeEvent() {
 // ゲームオーバー・スコア
 // ============================================================
 function gameOver(reason) {
-  stopTimer();
+  forceStopTimer();
   GameState.reachedFloor = GameState.floor;
+
+  // ヘルプやモーダルが開いていたら閉じる
+  const helpModal  = document.getElementById("help-modal");
+  const eventModal = document.getElementById("event-modal");
+  if (helpModal)  helpModal.classList.remove("visible");
+  if (eventModal) eventModal.classList.remove("visible");
+
   showScreen("result");
   setText("result-reason",    reason === "時間切れ" ? "⏰ 時間切れ…" : "💀 戦闘敗北…");
   setText("result-floor",     `${GameState.reachedFloor} F`);
@@ -432,7 +498,8 @@ function gameOver(reason) {
 }
 
 function showScore() {
-  const floorScore    = GameState.reachedFloor * 1000;
+  // 到達階層×500に変更
+  const floorScore    = GameState.reachedFloor * 500;
   const enemyScore    = GameState.enemiesDefeated * 500;
   const bossScore     = GameState.bossesDefeated * 2000;
   const treasureScore = GameState.treasures.reduce((sum, t) => sum + t.value, 0);
@@ -446,9 +513,12 @@ function showScore() {
   }
 
   showScreen("score");
-  setText("score-floor",     `${GameState.reachedFloor}F × 1000 = ${floorScore.toLocaleString()} pt`);
-  setText("score-enemy",     `${GameState.enemiesDefeated}体 × 500 = ${enemyScore.toLocaleString()} pt`);
-  setText("score-boss",      `${GameState.bossesDefeated}体 × 2000 = ${bossScore.toLocaleString()} pt`);
+  setText("score-floor",
+    `${GameState.reachedFloor}F × 500 = ${floorScore.toLocaleString()} pt`);
+  setText("score-enemy",
+    `${GameState.enemiesDefeated}体 × 500 = ${enemyScore.toLocaleString()} pt`);
+  setText("score-boss",
+    `${GameState.bossesDefeated}体 × 2000 = ${bossScore.toLocaleString()} pt`);
   setText("score-treasure",  `${treasureScore.toLocaleString()} pt`);
   setText("score-total",     total.toLocaleString());
   setText("score-highscore", GameState.highScore.toLocaleString());
@@ -479,11 +549,10 @@ function backToMenu() {
 }
 
 // ============================================================
-// イベント結果モーダル
+// イベント結果モーダル（タイマー止めない）
 // ============================================================
 function showEventResult(title, message, callback) {
-  stopTimer();
-  const modal    = document.getElementById("event-modal");
+  const modal      = document.getElementById("event-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalMsg   = document.getElementById("modal-message");
   const modalBtn   = document.getElementById("modal-btn");
@@ -517,18 +586,24 @@ function buildHelpContent() {
     ).join("");
   }
 
-  // ボステーブル
+  // ボステーブル（通常ボス＋時空専用ボス）
   const bossBody = document.getElementById("boss-table-body");
   if (bossBody) {
-    bossBody.innerHTML = BOSSES.map((b) =>
-      `<tr class="boss-row">
-        <td>${b.name}</td>
+    const allBosses = [
+      ...BOSSES,
+      VORTEX_BOSSES.guardian,
+      VORTEX_BOSSES.ruler,
+    ];
+    bossBody.innerHTML = allBosses.map((b) => {
+      const isVortex = b.id === "vb01" || b.id === "vb02";
+      return `<tr class="${isVortex ? "vortex-boss-row" : "boss-row"}">
+        <td>${b.name}${isVortex ? " 🌀" : ""}</td>
         <td>${b.hp}</td>
         <td>${b.atk}</td>
         <td>${b.def}</td>
         <td>${b.ctr}%</td>
-      </tr>`
-    ).join("");
+      </tr>`;
+    }).join("");
   }
 
   // お宝一覧
@@ -569,10 +644,9 @@ function closeHelp() {
 function switchHelpTab(tab) {
   document.querySelectorAll(".help-tab").forEach((t) => t.classList.remove("active"));
   document.querySelectorAll(".help-panel").forEach((p) => p.classList.remove("active"));
-
-  const activeTab = document.querySelector(`.help-tab[onclick="switchHelpTab('${tab}')"]`);
+  const activeTab   = document.querySelector(`.help-tab[onclick="switchHelpTab('${tab}')"]`);
   const activePanel = document.getElementById(`help-${tab}`);
-  if (activeTab)  activeTab.classList.add("active");
+  if (activeTab)   activeTab.classList.add("active");
   if (activePanel) activePanel.classList.add("active");
 }
 
@@ -583,7 +657,7 @@ function addBattleLog(text) {
   GameState.battleLog.push(text);
   const logEl = document.getElementById("battle-log");
   if (!logEl) return;
-  const p = document.createElement("p");
+  const p       = document.createElement("p");
   p.textContent = text;
   logEl.appendChild(p);
   logEl.scrollTop = logEl.scrollHeight;
@@ -619,8 +693,8 @@ function updateBar(id, current, max) {
 function showToast(message, duration = 2500) {
   let toast = document.getElementById("toast");
   if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "toast";
+    toast           = document.createElement("div");
+    toast.id        = "toast";
     document.body.appendChild(toast);
   }
   toast.innerHTML = message.replace(/\n/g, "<br>");
