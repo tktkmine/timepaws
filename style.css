@@ -1,11 +1,7 @@
 /* ============================================================
-   style.css - 時空ダンジョン
-   テーマ: ダークファンタジー × レトロRPG
+   style.css - 時空ダンジョン（修正版）
    ============================================================ */
 
-/* ============================================================
-   Google Fonts / CSS変数
-   ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap');
 
 :root {
@@ -50,8 +46,14 @@
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
-  width: 100%; height: 100%;
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
   background: var(--bg-deep);
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -63,20 +65,27 @@ html, body {
 /* ============================================================
    画面管理
    ============================================================ */
+
+/* スクロール不要な画面（デフォルト） */
 .screen {
   position: fixed;
   inset: 0;
   display: none;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
-  padding: 20px 16px 32px;
+  overflow: hidden;
   animation: fadeIn 0.3s ease;
 }
 .screen.active { display: flex; }
 
+/* スクロール許可画面（キャラ選択・スコア） */
+.screen-scrollable {
+  overflow-y: auto;
+  padding: 20px 16px 40px;
+}
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -124,12 +133,39 @@ html, body {
 .btn-large { padding: 16px 40px; font-size: 17px; }
 
 /* ============================================================
+   ヘルプボタン（共通）
+   ============================================================ */
+.help-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-gold);
+  background: var(--bg-panel);
+  color: var(--accent-gold);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: var(--shadow-gold);
+}
+.help-btn:hover {
+  background: var(--accent-gold);
+  color: #1a1200;
+}
+
+/* ============================================================
    メインメニュー
    ============================================================ */
 #screen-menu {
   justify-content: center;
   position: relative;
-  overflow: hidden;
 }
 
 .menu-bg {
@@ -142,8 +178,6 @@ html, body {
   pointer-events: none;
   z-index: 0;
 }
-
-/* 星のパーティクル風装飾 */
 .menu-bg::before {
   content: '';
   position: absolute;
@@ -165,38 +199,23 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  max-width: 480px;
+  gap: 20px;
   width: 100%;
+  max-width: 360px;
+  padding: 0 24px;
   text-align: center;
 }
 
 .logo {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   object-fit: contain;
-  filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+  filter: drop-shadow(0 0 24px rgba(201,168,76,0.5));
   animation: float 3.5s ease-in-out infinite;
 }
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-10px); }
-}
-
-.game-title {
-  font-family: var(--font-title);
-  font-size: 28px;
-  color: var(--accent-gold-l);
-  text-shadow: 0 0 30px rgba(201,168,76,0.6), 0 2px 4px rgba(0,0,0,0.8);
-  letter-spacing: 0.08em;
-}
-
-.game-subtitle {
-  color: var(--text-muted);
-  font-size: 13px;
-  letter-spacing: 0.15em;
-  margin-top: -10px;
 }
 
 .highscore-display {
@@ -209,85 +228,92 @@ html, body {
   padding: 10px 24px;
   box-shadow: var(--shadow-gold);
 }
-.hs-label  { color: var(--accent-gold); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; }
-.hs-value  { color: var(--accent-gold-l); font-size: 26px; font-weight: 700; }
-.hs-unit   { color: var(--text-muted); font-size: 12px; }
+.hs-label { color: var(--accent-gold); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; }
+.hs-value { color: var(--accent-gold-l); font-size: 26px; font-weight: 700; }
+.hs-unit  { color: var(--text-muted); font-size: 12px; }
 
 .menu-hint { color: var(--text-muted); font-size: 12px; }
 
 /* ============================================================
-   キャラクター選択
+   キャラクター選択（スクロール可）
    ============================================================ */
-.screen-header { width: 100%; text-align: center; margin-bottom: 16px; }
-
+.screen-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
 .screen-title {
   font-family: var(--font-title);
-  font-size: 20px;
+  font-size: 18px;
   color: var(--accent-gold);
   letter-spacing: 0.08em;
 }
 
+/* 横並び4体・コンパクト */
 .char-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
   width: 100%;
   max-width: 480px;
+  flex-shrink: 0;
 }
 
 .char-card {
   background: var(--bg-card);
   border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px 12px;
+  border-radius: var(--radius);
+  padding: 10px 6px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   cursor: pointer;
   transition: var(--transition);
 }
 .char-card:hover {
   border-color: var(--accent-gold);
   background: var(--bg-card-hover);
-  box-shadow: var(--shadow-gold);
   transform: translateY(-2px);
 }
 .char-card.selected {
   border-color: var(--accent-gold-l);
   background: var(--bg-card-hover);
-  box-shadow: 0 0 24px rgba(201,168,76,0.4);
+  box-shadow: 0 0 16px rgba(201,168,76,0.4);
 }
 
 .char-img {
-  width: 80px;
-  height: 80px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
   transition: var(--transition);
 }
 .char-card:hover .char-img,
 .char-card.selected .char-img {
-  filter: drop-shadow(0 0 12px rgba(201,168,76,0.5));
-  transform: scale(1.05);
+  filter: drop-shadow(0 0 10px rgba(201,168,76,0.5));
+  transform: scale(1.06);
 }
 
-.char-name { font-weight: 700; font-size: 15px; color: var(--text-primary); }
-.char-sub-label { font-size: 11px; color: var(--text-muted); }
+.char-name      { font-weight: 700; font-size: 12px; color: var(--text-primary); text-align: center; }
+.char-sub-label { font-size: 10px; color: var(--text-muted); text-align: center; }
 
+/* キャラ詳細 */
 .char-detail {
   width: 100%;
   max-width: 480px;
+  margin-top: 12px;
   opacity: 0;
   max-height: 0;
   overflow: hidden;
-  transition: opacity 0.3s ease, max-height 0.3s ease;
+  transition: opacity 0.3s ease, max-height 0.4s ease;
+  flex-shrink: 0;
 }
 .char-detail.visible {
   opacity: 1;
-  max-height: 200px;
+  max-height: 260px;
 }
-
 .char-detail-inner {
   background: var(--bg-panel);
   border: 1px solid var(--border-gold);
@@ -295,17 +321,17 @@ html, body {
   padding: 14px 16px;
 }
 .char-detail-inner h3 {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--accent-gold-l);
   margin-bottom: 6px;
 }
-.char-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
-.char-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.char-sub  { font-size: 11px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+.char-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.7; }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 .stat-item {
   display: flex;
@@ -315,24 +341,26 @@ html, body {
   border-radius: var(--radius);
   padding: 6px 4px;
 }
-.stat-label { font-size: 10px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.08em; }
-.stat-val   { font-size: 16px; color: var(--accent-gold-l); font-weight: 700; }
+.stat-label { font-size: 10px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
+.stat-val   { font-size: 15px; color: var(--accent-gold-l); font-weight: 700; }
 
 .select-actions {
   display: flex;
   gap: 12px;
   width: 100%;
   max-width: 480px;
-  margin-top: 8px;
+  margin-top: 14px;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 /* ============================================================
-   ダンジョン画面
+   ダンジョン画面（スクロールなし）
    ============================================================ */
 #screen-dungeon {
-  padding: 0;
   justify-content: flex-start;
+  padding: 0;
+  position: relative;
 }
 
 /* ステータスバー */
@@ -341,30 +369,29 @@ html, body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
   padding: 10px 14px;
   flex-shrink: 0;
 }
-
-.status-left  { display: flex; flex-direction: column; gap: 4px; }
-.status-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.status-left   { display: flex; flex-direction: column; gap: 4px; }
 .status-center { display: flex; justify-content: center; }
+.status-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 
 .status-char-name { font-size: 13px; font-weight: 700; color: var(--accent-gold); }
 
-/* HPバー */
 .hp-container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
-.stat-label-sm { font-size: 10px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; white-space: nowrap; }
+.stat-label-sm { font-size: 10px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
+
 .hp-bar-bg {
   flex: 1;
-  min-width: 80px;
-  max-width: 140px;
+  min-width: 70px;
+  max-width: 130px;
   height: 8px;
   background: rgba(255,255,255,0.08);
   border-radius: 99px;
@@ -380,14 +407,13 @@ html, body {
 .hp-bar-fill.low      { background: linear-gradient(90deg, var(--hp-yellow), #e8e870); }
 .hp-bar-fill.critical { background: linear-gradient(90deg, var(--hp-red), #e87070); animation: pulse 0.8s ease infinite; }
 .enemy-bar            { background: linear-gradient(90deg, var(--accent-red), var(--accent-red-l)); }
-.hp-text { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.hp-text { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+  50%       { opacity: 0.55; }
 }
 
-/* フロア表示 */
 .floor-display {
   display: flex;
   flex-direction: column;
@@ -395,9 +421,8 @@ html, body {
   line-height: 1;
 }
 .floor-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.15em; font-weight: 700; }
-.floor-num   { font-family: var(--font-title); font-size: 28px; color: var(--accent-gold-l); line-height: 1.1; }
+.floor-num   { font-family: var(--font-title); font-size: 26px; color: var(--accent-gold-l); line-height: 1.1; }
 
-/* タイマー */
 .timer-wrap {
   display: flex;
   align-items: baseline;
@@ -405,74 +430,66 @@ html, body {
 }
 .timer-label { font-size: 12px; }
 .timer-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   transition: color 0.3s;
   font-variant-numeric: tabular-nums;
 }
-.timer-unit  { font-size: 11px; color: var(--text-muted); }
+.timer-unit { font-size: 11px; color: var(--text-muted); }
 .timer-wrap.danger .timer-value {
   color: var(--accent-red-l);
   animation: pulse 0.6s ease infinite;
 }
 
-/* 時空バッジ */
 .spacetime-badge {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
   border: 1px solid var(--border);
   border-radius: 99px;
-  padding: 2px 8px;
+  padding: 2px 7px;
   text-align: right;
   white-space: nowrap;
 }
-.spacetime-badge.active-fast {
-  color: var(--accent-red-l);
-  border-color: var(--accent-red);
-  background: rgba(201,76,76,0.12);
-}
-.spacetime-badge.active-slow {
-  color: var(--accent-blue-l);
-  border-color: var(--accent-blue);
-  background: rgba(76,123,201,0.12);
-}
-.spacetime-badge.active-normal {
-  color: var(--accent-green);
-  border-color: var(--accent-green);
-  background: rgba(76,201,122,0.12);
-}
+.spacetime-badge.active-fast   { color: var(--accent-red-l);  border-color: var(--accent-red);  background: rgba(201,76,76,0.12); }
+.spacetime-badge.active-slow   { color: var(--accent-blue-l); border-color: var(--accent-blue); background: rgba(76,123,201,0.12); }
+.spacetime-badge.active-normal { color: var(--accent-green);  border-color: var(--accent-green); background: rgba(76,201,122,0.12); }
 
 /* ダンジョンメッセージ */
 .dungeon-message {
   width: 100%;
-  max-width: 480px;
-  margin: 18px auto 0;
-  padding: 12px 16px;
+  padding: 12px 52px 12px 16px; /* 右側にヘルプボタン分の余白 */
   background: var(--bg-panel);
-  border-left: 3px solid var(--accent-gold);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
   color: var(--text-primary);
+  flex-shrink: 0;
+  border-left: 3px solid var(--accent-gold);
 }
 
 /* イベント選択 */
 .event-section {
   width: 100%;
-  max-width: 480px;
-  margin: 20px auto 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 0 0 32px;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 16px;
+  overflow: hidden;
 }
 .event-prompt {
   text-align: center;
   color: var(--text-muted);
   font-size: 12px;
   letter-spacing: 0.15em;
+  flex-shrink: 0;
 }
-.event-choices { display: flex; flex-direction: column; gap: 12px; }
+.event-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
 .event-btn {
   width: 100%;
@@ -483,7 +500,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   transition: var(--transition);
   text-align: left;
@@ -496,34 +513,27 @@ html, body {
 }
 .event-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-.event-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent-gold-l);
-}
-.event-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-}
+.event-name { font-size: 16px; font-weight: 700; color: var(--accent-gold-l); }
+.event-desc { font-size: 12px; color: var(--text-muted); }
 
 /* ============================================================
-   戦闘画面
+   戦闘画面（スクロールなし）
    ============================================================ */
 #screen-battle {
   justify-content: flex-start;
-  max-width: 480px;
-  margin: 0 auto;
+  padding: 14px 16px 16px;
+  max-width: 100%;
 }
 
 .battle-header {
   width: 100%;
   text-align: center;
-  margin-bottom: 20px;
-  padding-top: 8px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
 }
 .battle-title {
   font-family: var(--font-title);
-  font-size: 22px;
+  font-size: 20px;
   color: var(--accent-red-l);
   text-shadow: 0 0 20px rgba(201,76,76,0.5);
   letter-spacing: 0.1em;
@@ -534,68 +544,73 @@ html, body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
-.enemy-block  { border-color: var(--accent-red);  }
+.enemy-block  { border-color: var(--accent-red); }
 .player-block { border-color: var(--accent-blue); }
 
-.combatant-name-row { margin-bottom: 8px; }
-.combatant-name { font-size: 16px; font-weight: 700; }
+.combatant-name-row { margin-bottom: 7px; }
+.combatant-name { font-size: 15px; font-weight: 700; }
 .enemy-name     { color: var(--accent-red-l); }
 .player-name    { color: var(--accent-blue-l); }
 
-.combatant-block .hp-bar-bg { min-width: 0; max-width: none; flex: 1; height: 10px; }
+.combatant-block .hp-bar-bg {
+  min-width: 0;
+  max-width: none;
+  flex: 1;
+  height: 10px;
+}
 
 .vs-divider {
   text-align: center;
   font-family: var(--font-title);
-  font-size: 18px;
+  font-size: 16px;
   color: var(--accent-gold);
-  margin: 4px 0;
+  margin: 2px 0 8px;
   letter-spacing: 0.2em;
   text-shadow: 0 0 12px rgba(201,168,76,0.4);
+  flex-shrink: 0;
 }
 
 .battle-log {
   width: 100%;
+  flex: 1;
   background: rgba(0,0,0,0.4);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
-  min-height: 100px;
-  max-height: 160px;
+  min-height: 80px;
+  max-height: 200px;
   overflow-y: auto;
-  margin: 10px 0;
   font-size: 13px;
   line-height: 1.8;
   color: var(--text-primary);
+  margin-bottom: 10px;
 }
 .battle-log p { border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 2px; }
 .battle-log p:last-child { border-bottom: none; color: var(--accent-gold-l); }
 
-.battle-btn {
-  width: 100%;
-  margin-top: 8px;
-}
+.battle-btn { width: 100%; flex-shrink: 0; }
 
 /* ============================================================
-   結果画面
+   結果画面（スクロールなし）
    ============================================================ */
-#screen-result { justify-content: center; }
+#screen-result { justify-content: center; padding: 24px 20px; }
 
 .result-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 22px;
   width: 100%;
   max-width: 400px;
   text-align: center;
 }
 .result-reason {
   font-family: var(--font-title);
-  font-size: 26px;
+  font-size: 24px;
   color: var(--accent-red-l);
   text-shadow: 0 0 24px rgba(201,76,76,0.5);
 }
@@ -618,36 +633,33 @@ html, body {
 .result-val   { font-size: 16px; font-weight: 700; color: var(--accent-gold-l); }
 
 /* ============================================================
-   スコア画面
+   スコア画面（スクロール可）
    ============================================================ */
-#screen-score {
-  justify-content: flex-start;
-  padding-top: 16px;
-}
+#screen-score { justify-content: flex-start; }
 
 .score-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   max-width: 440px;
 }
 .score-title {
   font-family: var(--font-title);
-  font-size: 24px;
+  font-size: 22px;
   color: var(--accent-gold-l);
   letter-spacing: 0.1em;
   text-shadow: var(--shadow-gold);
 }
 .new-record {
   font-family: var(--font-title);
-  font-size: 18px;
+  font-size: 16px;
   color: var(--accent-gold-l);
   background: rgba(201,168,76,0.12);
   border: 2px solid var(--accent-gold);
   border-radius: var(--radius);
-  padding: 8px 24px;
+  padding: 7px 20px;
   animation: glow 1s ease infinite alternate;
 }
 @keyframes glow {
@@ -660,71 +672,70 @@ html, body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .score-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-bottom: 8px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--border);
 }
 .score-row:last-child { border-bottom: none; padding-bottom: 0; }
 .score-label { font-size: 13px; color: var(--text-muted); }
-.score-val   { font-size: 14px; color: var(--text-primary); font-weight: 700; }
+.score-val   { font-size: 13px; color: var(--text-primary); font-weight: 700; }
 
 .total-row { margin-top: 4px; }
 .total-val {
-  font-size: 22px !important;
+  font-size: 20px !important;
   color: var(--accent-gold-l) !important;
   text-shadow: 0 0 12px rgba(201,168,76,0.4);
 }
 
-/* 獲得宝一覧 */
 .treasure-section {
   width: 100%;
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 12px 14px;
 }
 .treasure-title {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--accent-gold);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-weight: 700;
 }
 .treasure-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 150px;
+  gap: 5px;
+  max-height: 130px;
   overflow-y: auto;
 }
 .treasure-list li {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   font-size: 12px;
   color: var(--text-muted);
-  padding-bottom: 5px;
+  padding-bottom: 4px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .t-rank {
   font-size: 10px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 99px;
   white-space: nowrap;
 }
 .rank-低級 { background: rgba(122,122,154,0.3); color: var(--text-muted); }
-.rank-中級 { background: rgba(76,123,201,0.3); color: var(--accent-blue-l); }
-.rank-高級 { background: rgba(201,168,76,0.3); color: var(--accent-gold-l); }
-.rank-伝説 { background: rgba(155,76,201,0.3); color: #c97ae8; }
+.rank-中級 { background: rgba(76,123,201,0.3);  color: var(--accent-blue-l); }
+.rank-高級 { background: rgba(201,168,76,0.3);  color: var(--accent-gold-l); }
+.rank-伝説 { background: rgba(155,76,201,0.3);  color: #c97ae8; }
 
 .t-val { margin-left: auto; color: var(--accent-gold); font-weight: 700; white-space: nowrap; }
 
@@ -735,17 +746,17 @@ html, body {
   background: var(--bg-panel);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius);
-  padding: 10px 24px;
+  padding: 8px 20px;
   box-shadow: var(--shadow-gold);
 }
 
 /* ============================================================
-   モーダル
+   モーダル（共通）
    ============================================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.78);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -759,6 +770,7 @@ html, body {
   opacity: 1;
   pointer-events: all;
 }
+
 .modal-box {
   background: var(--bg-panel);
   border: 1px solid var(--border-gold);
@@ -768,17 +780,18 @@ html, body {
   max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   box-shadow: var(--shadow), var(--shadow-gold);
   animation: modalIn 0.25s ease;
 }
 @keyframes modalIn {
   from { transform: scale(0.92) translateY(10px); opacity: 0; }
-  to   { transform: scale(1) translateY(0);        opacity: 1; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
 }
+
 .modal-title {
   font-family: var(--font-title);
-  font-size: 18px;
+  font-size: 17px;
   color: var(--accent-gold-l);
   text-align: center;
 }
@@ -787,7 +800,156 @@ html, body {
   color: var(--text-primary);
   line-height: 1.8;
   text-align: center;
-  white-space: pre-wrap;
+}
+
+/* ============================================================
+   ヘルプモーダル
+   ============================================================ */
+.modal-box-help {
+  max-width: 420px;
+  max-height: 88vh;
+  padding: 16px 14px 14px;
+  gap: 10px;
+}
+
+/* タブ */
+.help-tabs {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  flex-shrink: 0;
+}
+.help-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+.help-tab:hover  { border-color: var(--accent-gold); color: var(--text-primary); }
+.help-tab.active {
+  background: var(--accent-gold);
+  color: #1a1200;
+  border-color: var(--accent-gold);
+}
+
+/* パネル共通 */
+.help-panel {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(88vh - 140px);
+  flex: 1;
+}
+.help-panel.active { display: flex; }
+
+/* 行動一覧 */
+.help-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+.help-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-gold-l);
+  margin-bottom: 4px;
+}
+.help-item-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* 敵図鑑 */
+.help-section-label {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  flex-shrink: 0;
+}
+.enemy-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.enemy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.enemy-table th {
+  background: var(--bg-card);
+  color: var(--accent-gold);
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border-gold);
+  white-space: nowrap;
+}
+.enemy-table td {
+  padding: 5px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.enemy-table td:first-child { text-align: left; }
+.enemy-table tr:last-child td { border-bottom: none; }
+.boss-row td { color: var(--accent-red-l); }
+.boss-row td:first-child { font-weight: 700; }
+
+.help-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* お宝一覧 */
+.treasure-help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.treasure-rank-group { display: flex; flex-direction: column; gap: 5px; }
+.treasure-rank-label {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  margin-bottom: 2px;
+}
+.rank-label-低級 { background: rgba(122,122,154,0.2); color: var(--text-muted); }
+.rank-label-中級 { background: rgba(76,123,201,0.2);  color: var(--accent-blue-l); }
+.rank-label-高級 { background: rgba(201,168,76,0.2);  color: var(--accent-gold-l); }
+.rank-label-伝説 { background: rgba(155,76,201,0.2);  color: #c97ae8; }
+
+.treasure-help-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 5px 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+}
+
+.help-close-btn {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 /* ============================================================
@@ -810,7 +972,7 @@ html, body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  max-width: 320px;
+  max-width: 300px;
   box-shadow: var(--shadow);
 }
 .toast.show {
@@ -821,18 +983,25 @@ html, body {
 /* ============================================================
    スクロールバー
    ============================================================ */
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar       { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
 
 /* ============================================================
-   レスポンシブ（小画面対応）
+   レスポンシブ（小画面）
    ============================================================ */
 @media (max-width: 360px) {
-  .game-title  { font-size: 22px; }
-  .char-grid   { grid-template-columns: repeat(2, 1fr); }
-  .char-img    { width: 64px; height: 64px; }
+  .char-img    { width: 46px; height: 46px; }
+  .char-name   { font-size: 10px; }
   .floor-num   { font-size: 22px; }
-  .timer-value { font-size: 18px; }
+  .timer-value { font-size: 17px; }
+  .event-btn   { padding: 14px 14px; }
+  .event-name  { font-size: 14px; }
+}
+
+@media (max-height: 680px) {
+  .event-btn  { padding: 13px 16px; }
+  .logo       { width: 120px; height: 120px; }
+  .menu-content { gap: 14px; }
 }
