@@ -2,9 +2,6 @@
 // data.js - キャラクター・敵・宝・イベントデータ管理
 // ============================================================
 
-// ============================================================
-// キャラクターデータ
-// ============================================================
 const CHARACTERS = {
   woosan: {
     id: "woosan",
@@ -16,7 +13,6 @@ const CHARACTERS = {
     def: 5,
     ctr: 15,
     description: "素早さが自慢の子ウサギ。戦闘力は低いが、時の加速を引きやすい。",
-    // 基本重み10、得意行動は12（約20%増）
     eventWeights: {
       battle:       10,
       treasure:     10,
@@ -104,68 +100,68 @@ const CHARACTERS = {
 };
 
 // ============================================================
-// 通常敵データ（20種類）現在の半分のステータス
+// 通常敵データ（20種類）1.5倍
 // ============================================================
 const ENEMIES = [
-  { id: "e01", name: "時計ネコ",      hp: 14,  atk: 4,  def: 1,  ctr: 5  },
-  { id: "e02", name: "砂時計キツネ",  hp: 19,  atk: 5,  def: 2,  ctr: 8  },
-  { id: "e03", name: "分針イヌ",      hp: 17,  atk: 4,  def: 2,  ctr: 6  },
-  { id: "e04", name: "秒針トカゲ",    hp: 12,  atk: 5,  def: 1,  ctr: 10 },
-  { id: "e05", name: "時空クマ",      hp: 27,  atk: 6,  def: 3,  ctr: 7  },
-  { id: "e06", name: "永遠ヘビ",      hp: 20,  atk: 5,  def: 2,  ctr: 9  },
-  { id: "e07", name: "瞬間ネズミ",    hp: 10,  atk: 6,  def: 1,  ctr: 15 },
-  { id: "e08", name: "過去ペンギン",  hp: 22,  atk: 4,  def: 3,  ctr: 5  },
-  { id: "e09", name: "未来タヌキ",    hp: 24,  atk: 6,  def: 3,  ctr: 8  },
-  { id: "e10", name: "逆行アリクイ",  hp: 15,  atk: 5,  def: 2,  ctr: 12 },
-  { id: "e11", name: "時歪みシカ",    hp: 30,  atk: 7,  def: 4,  ctr: 6  },
-  { id: "e12", name: "刹那ビーバー",  hp: 14,  atk: 7,  def: 1,  ctr: 14 },
-  { id: "e13", name: "残影ヒョウ",    hp: 25,  atk: 8,  def: 3,  ctr: 10 },
-  { id: "e14", name: "時縛りカメ",    hp: 34,  atk: 4,  def: 5,  ctr: 4  },
-  { id: "e15", name: "黄昏オオカミ",  hp: 29,  atk: 7,  def: 3,  ctr: 11 },
-  { id: "e16", name: "夜明けバク",    hp: 20,  atk: 5,  def: 2,  ctr: 8  },
-  { id: "e17", name: "時喰いカバ",    hp: 37,  atk: 6,  def: 4,  ctr: 5  },
-  { id: "e18", name: "千年ワニ",      hp: 32,  atk: 7,  def: 4,  ctr: 7  },
-  { id: "e19", name: "瞬獄コウモリ",  hp: 17,  atk: 8,  def: 2,  ctr: 16 },
-  { id: "e20", name: "迷宮ライオン",  hp: 35,  atk: 8,  def: 5,  ctr: 9  },
+  { id: "e01", name: "時計ネコ",      hp: 21,  atk: 6,  def: 2,  ctr: 5  },
+  { id: "e02", name: "砂時計キツネ",  hp: 29,  atk: 8,  def: 3,  ctr: 8  },
+  { id: "e03", name: "分針イヌ",      hp: 26,  atk: 6,  def: 3,  ctr: 6  },
+  { id: "e04", name: "秒針トカゲ",    hp: 18,  atk: 8,  def: 2,  ctr: 10 },
+  { id: "e05", name: "時空クマ",      hp: 41,  atk: 9,  def: 5,  ctr: 7  },
+  { id: "e06", name: "永遠ヘビ",      hp: 30,  atk: 8,  def: 3,  ctr: 9  },
+  { id: "e07", name: "瞬間ネズミ",    hp: 15,  atk: 9,  def: 2,  ctr: 15 },
+  { id: "e08", name: "過去ペンギン",  hp: 33,  atk: 6,  def: 5,  ctr: 5  },
+  { id: "e09", name: "未来タヌキ",    hp: 36,  atk: 9,  def: 5,  ctr: 8  },
+  { id: "e10", name: "逆行アリクイ",  hp: 23,  atk: 8,  def: 3,  ctr: 12 },
+  { id: "e11", name: "時歪みシカ",    hp: 45,  atk: 11, def: 6,  ctr: 6  },
+  { id: "e12", name: "刹那ビーバー",  hp: 21,  atk: 11, def: 2,  ctr: 14 },
+  { id: "e13", name: "残影ヒョウ",    hp: 38,  atk: 12, def: 5,  ctr: 10 },
+  { id: "e14", name: "時縛りカメ",    hp: 51,  atk: 6,  def: 8,  ctr: 4  },
+  { id: "e15", name: "黄昏オオカミ",  hp: 44,  atk: 11, def: 5,  ctr: 11 },
+  { id: "e16", name: "夜明けバク",    hp: 30,  atk: 8,  def: 3,  ctr: 8  },
+  { id: "e17", name: "時喰いカバ",    hp: 56,  atk: 9,  def: 6,  ctr: 5  },
+  { id: "e18", name: "千年ワニ",      hp: 48,  atk: 11, def: 6,  ctr: 7  },
+  { id: "e19", name: "瞬獄コウモリ",  hp: 26,  atk: 12, def: 3,  ctr: 16 },
+  { id: "e20", name: "迷宮ライオン",  hp: 53,  atk: 12, def: 8,  ctr: 9  },
 ];
 
 // ============================================================
-// ボスデータ（10種類）現在の半分のステータス
+// ボスデータ（10種類）1.5倍
 // ============================================================
 const BOSSES = [
-  { id: "b01", name: "時空王カイオウ",      hp: 67,  atk: 10, def: 5,  ctr: 10 },
-  { id: "b02", name: "永劫龍ジカーン",      hp: 84,  atk: 11, def: 6,  ctr: 12 },
-  { id: "b03", name: "歴史喰いマンモス",    hp: 100, atk: 9,  def: 8,  ctr: 8  },
-  { id: "b04", name: "刹那神ファルコーン",  hp: 60,  atk: 12, def: 4,  ctr: 18 },
-  { id: "b05", name: "時縛り大公クロノス",  hp: 90,  atk: 10, def: 7,  ctr: 10 },
-  { id: "b06", name: "亜空間皇テンポラ",    hp: 74,  atk: 11, def: 6,  ctr: 14 },
-  { id: "b07", name: "逆行獣レグレス",      hp: 80,  atk: 9,  def: 7,  ctr: 11 },
-  { id: "b08", name: "無限蛇エターナル",    hp: 117, atk: 8,  def: 9,  ctr: 7  },
-  { id: "b09", name: "時流王バスト",        hp: 64,  atk: 13, def: 5,  ctr: 20 },
-  { id: "b10", name: "時の覇者クロニクル",  hp: 134, atk: 12, def: 10, ctr: 15 },
+  { id: "b01", name: "時空王カイオウ",      hp: 101, atk: 15, def: 8,  ctr: 10 },
+  { id: "b02", name: "永劫龍ジカーン",      hp: 126, atk: 17, def: 9,  ctr: 12 },
+  { id: "b03", name: "歴史喰いマンモス",    hp: 150, atk: 14, def: 12, ctr: 8  },
+  { id: "b04", name: "刹那神ファルコーン",  hp: 90,  atk: 18, def: 6,  ctr: 18 },
+  { id: "b05", name: "時縛り大公クロノス",  hp: 135, atk: 15, def: 11, ctr: 10 },
+  { id: "b06", name: "亜空間皇テンポラ",    hp: 111, atk: 17, def: 9,  ctr: 14 },
+  { id: "b07", name: "逆行獣レグレス",      hp: 120, atk: 14, def: 11, ctr: 11 },
+  { id: "b08", name: "無限蛇エターナル",    hp: 176, atk: 12, def: 14, ctr: 7  },
+  { id: "b09", name: "時流王バスト",        hp: 96,  atk: 20, def: 8,  ctr: 20 },
+  { id: "b10", name: "時の覇者クロニクル",  hp: 201, atk: 18, def: 15, ctr: 15 },
 ];
 
 // ============================================================
-// 時空の渦専用ボス
+// 時空の渦専用ボス（1.5倍）
 // ============================================================
 const VORTEX_BOSSES = {
   guardian: {
     id: "vb01",
     name: "時の番人",
-    hp: 200,
-    atk: 19,
-    def: 12,
+    hp: 300,
+    atk: 29,
+    def: 18,
     ctr: 14,
-    currentHp: 200,
+    currentHp: 300,
   },
   ruler: {
     id: "vb02",
     name: "時空の支配者",
-    hp: 400,
-    atk: 36,
-    def: 23,
+    hp: 600,
+    atk: 54,
+    def: 35,
     ctr: 20,
-    currentHp: 400,
+    currentHp: 600,
   },
 };
 
@@ -232,7 +228,6 @@ const SPACETIME_EVENTS = [
 // ============================================================
 // ユーティリティ関数
 // ============================================================
-
 function weightedRandom(weights) {
   const keys  = Object.keys(weights);
   const total = keys.reduce((sum, k) => sum + weights[k], 0);
@@ -256,7 +251,6 @@ function chance(rate) {
   return Math.random() * 100 < rate;
 }
 
-/** お宝排出率：低級40% 中級30% 高級20% 伝説10% */
 function getRandomTreasure() {
   const weights = { 低級: 40, 中級: 30, 高級: 20, 伝説: 10 };
   const rank    = weightedRandom(weights);
@@ -264,7 +258,6 @@ function getRandomTreasure() {
   return randomPick(pool);
 }
 
-/** フロアに応じてスケールした通常敵を取得（0.5%増/階層） */
 function getScaledEnemy(floor) {
   const base  = randomPick(ENEMIES);
   const scale = 1 + (floor - 1) * 0.005;
@@ -277,19 +270,16 @@ function getScaledEnemy(floor) {
   };
 }
 
-/** ボス敵をランダム取得 */
 function getRandomBoss() {
   const boss = randomPick(BOSSES);
   return { ...boss, currentHp: boss.hp };
 }
 
-/** 時空の渦専用ボスを取得 */
 function getVortexBoss(type) {
   const base = VORTEX_BOSSES[type];
   return { ...base, currentHp: base.hp };
 }
 
-/** イベントを2つランダム選出（重み付き、重複なし） */
 function pickTwoEvents(character) {
   const weights        = { ...character.eventWeights };
   const first          = weightedRandom(weights);
