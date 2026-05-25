@@ -87,12 +87,16 @@
         </div>
       </div>
       <div class="status-right">
-        <div id="timer-wrap" class="timer-wrap">
-          <span class="timer-label">⏱</span>
-          <span id="timer-value" class="timer-value">180</span>
-          <span class="timer-unit">秒</span>
-        </div>
         <div id="spacetime-status" class="spacetime-badge">通常時空</div>
+      </div>
+    </div>
+
+    <!-- ダンジョン用タイマーバー（バトル画面と同じ構造） -->
+    <div class="battle-status-bar">
+      <div id="timer-wrap" class="timer-wrap">
+        <span class="timer-label">⏱</span>
+        <span id="timer-value" class="timer-value">180</span>
+        <span class="timer-unit">秒</span>
       </div>
     </div>
 
@@ -103,7 +107,6 @@
     <div class="event-section">
       <p class="event-prompt">— イベントを選択 —</p>
       <div id="event-choices" class="event-choices"></div>
-
       <!-- 固有スキルボタン -->
       <div class="skill-area">
         <button id="skill-btn" class="skill-btn" onclick="useSkill()">
@@ -116,8 +119,6 @@
 
   <!-- ========== 戦闘画面 ========== -->
   <div id="screen-battle" class="screen">
-
-    <!-- バトル用タイマー -->
     <div class="battle-status-bar">
       <div id="battle-timer-wrap" class="timer-wrap">
         <span class="timer-label">⏱</span>
@@ -125,12 +126,9 @@
         <span class="timer-unit">秒</span>
       </div>
     </div>
-
     <div class="battle-header">
       <h2 id="battle-title" class="battle-title">⚔️ BATTLE</h2>
     </div>
-
-    <!-- 敵 -->
     <div class="combatant-block enemy-block">
       <div class="combatant-name-row">
         <span id="enemy-name" class="combatant-name enemy-name">―</span>
@@ -143,10 +141,7 @@
         <span id="enemy-hp-value" class="hp-text">―</span>
       </div>
     </div>
-
     <div class="vs-divider">VS</div>
-
-    <!-- プレイヤー -->
     <div class="combatant-block player-block">
       <div class="combatant-name-row">
         <span id="battle-player-name" class="combatant-name player-name">―</span>
@@ -159,9 +154,7 @@
         <span id="battle-player-hp" class="hp-text">―</span>
       </div>
     </div>
-
     <div id="battle-log" class="battle-log"></div>
-
     <button id="battle-start-btn" class="btn btn-primary battle-btn">
       ⚔️ 戦闘開始！
     </button>
@@ -248,8 +241,6 @@
         <button class="help-tab" onclick="switchHelpTab('enemies')">敵図鑑</button>
         <button class="help-tab" onclick="switchHelpTab('treasures')">お宝一覧</button>
       </div>
-
-      <!-- 行動一覧 -->
       <div id="help-actions" class="help-panel active">
         <div class="help-item">
           <div class="help-item-title">⚔️ 戦闘</div>
@@ -307,8 +298,6 @@
           </div>
         </div>
       </div>
-
-      <!-- 敵図鑑 -->
       <div id="help-enemies" class="help-panel">
         <div class="help-section-label">— 通常敵 —</div>
         <div class="enemy-table-wrap">
@@ -331,17 +320,13 @@
         <p class="help-note">※通常敵のステータスは階層毎に0.5%強化されます</p>
         <p class="help-note">🌀 は時空の渦専用の特殊ボスです</p>
       </div>
-
-      <!-- お宝一覧 -->
       <div id="help-treasures" class="help-panel">
         <div class="treasure-help-list" id="treasure-help-list"></div>
       </div>
-
       <button class="btn btn-secondary help-close-btn" onclick="closeHelp()">✕ 閉じる</button>
     </div>
   </div>
 
-  <!-- ========== トースト通知 ========== -->
   <div id="toast" class="toast"></div>
 
   <script src="js/data.js"></script>
